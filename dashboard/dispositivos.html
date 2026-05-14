@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title>Dispositivos | Drippie</title>
+<style>
+.content { padding: 20px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ── HEADER ── */
+.dev-header { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.dev-header h2 { font-size:22px; font-weight:900; letter-spacing:-.4px; }
+.dev-header p  { font-size:12px; color:var(--t3); font-weight:600; margin-top:2px; }
+.btn-pair {
+    display:flex; align-items:center; gap:7px;
+    padding:9px 16px; border-radius:12px;
+    background:var(--as); border:1px solid var(--ab);
+    color:var(--accent); font-size:13px; font-weight:800;
+    cursor:pointer; font-family:'Nunito',sans-serif; transition:all .2s;
+}
+.btn-pair:hover { background:rgba(157,131,237,.2); }
+.btn-pair svg { width:14px; height:14px; stroke:var(--accent); }
+
+/* ── RESUMEN PILLS ── */
+.dev-pills { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.dev-pill {
+    background:var(--glass); border:1px solid var(--gb);
+    border-radius:16px; padding:14px 16px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    position:relative; overflow:hidden; transition:border-color .2s;
+}
+.dev-pill::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.dp-label { font-size:10px; font-weight:800; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+.dp-value { font-size:24px; font-weight:900; font-family:'DM Mono',monospace; line-height:1; }
+.dp-sub   { font-size:11px; color:var(--t3); font-weight:600; margin-top:4px; }
+.dp-bar   { position:absolute; bottom:0; left:0; right:0; height:2px; border-radius:0 0 16px 16px; }
+
+/* ── LAYOUT LISTA + DETALLE ── */
+.dev-layout { display:grid; grid-template-columns:340px 1fr; gap:14px; align-items:start; }
+
+/* ── LISTA DISPOSITIVOS ── */
+.dev-list { display:flex; flex-direction:column; gap:8px; }
+
+.dev-row {
+    background:var(--glass); border:1px solid var(--gb);
+    border-radius:16px; padding:14px;
+    display:flex; align-items:center; gap:12px;
+    cursor:pointer; transition:all .22s;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    position:relative; overflow:hidden;
+}
+.dev-row::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.dev-row:hover   { border-color:var(--gb-h); background:var(--glass-h); }
+.dev-row.active  { border-color:var(--ab); background:var(--as); }
+.dev-row.active::after { content:''; position:absolute; left:0; top:20%; bottom:20%; width:2px; background:var(--accent); border-radius:0 2px 2px 0; }
+
+/* icono de señal WiFi como indicador de conexión */
+.dev-signal {
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+}
+.dev-signal svg { width:17px; height:17px; }
+
+.dev-row-info { flex:1; min-width:0; }
+.dr-name { font-size:13px; font-weight:800; color:var(--t1); margin-bottom:2px; }
+.dr-sn   { font-size:10px; color:var(--t3); font-weight:700; font-family:'DM Mono',monospace; }
+
+.dev-row-meta { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.dev-status-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:50px;
+    font-size:10px; font-weight:800;
+}
+.dsb-ok   { background:var(--gs);  color:var(--green); }
+.dsb-warn { background:var(--ams); color:var(--amber); }
+.dsb-off  { background:var(--t4);  color:var(--t2); }
+.dsb-err  { background:var(--rs);  color:var(--red); }
+.dsb-dot  { width:5px; height:5px; border-radius:50%; background:currentColor; }
+.dsb-warn .dsb-dot, .dsb-err .dsb-dot { animation:pulse 1.8s ease infinite; }
+.dr-last  { font-size:10px; color:var(--t4); font-weight:600; }
+
+/* ── PANEL DETALLE ── */
+.dev-detail { display:flex; flex-direction:column; gap:12px; animation:fadeUp .3s ease both; }
+
+/* CABECERA DISPOSITIVO */
+.ddc {
+    background:var(--glass); border:1px solid var(--gb);
+    border-radius:var(--r); padding:20px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    position:relative; overflow:hidden;
+}
+.ddc::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,transparent 55%); pointer-events:none; }
+
+.ddc-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+.ddc-name { font-size:20px; font-weight:900; letter-spacing:-.3px; margin-bottom:3px; }
+.ddc-model{ font-size:11px; color:var(--t3); font-weight:600; }
+.ddc-acts { display:flex; gap:7px; }
+.ddc-btn {
+    width:32px; height:32px; border-radius:9px;
+    background:var(--glass); border:1px solid var(--gb);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .18s;
+}
+.ddc-btn:hover { background:var(--glass-h); border-color:var(--gb-h); }
+.ddc-btn svg { width:14px; height:14px; stroke:var(--t2); }
+
+/* SPECS GRID */
+.specs-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:1px; background:var(--gb);
+    border-radius:12px; overflow:hidden;
+}
+.spec-cell {
+    background:rgba(11,11,18,.6); padding:11px 12px;
+}
+.sc-key { font-size:9px; font-weight:800; color:var(--t4); letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+.sc-val { font-size:12px; font-weight:800; font-family:'DM Mono',monospace; color:var(--t1); }
+
+/* ── SECCIÓN GENÉRICA ── */
+.det-section {
+    background:var(--glass); border:1px solid var(--gb);
+    border-radius:var(--r); padding:18px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    position:relative; overflow:hidden;
+}
+.det-section::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.det-eye { font-size:10px; font-weight:800; color:var(--t3); letter-spacing:.12em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+.det-eye span { font-size:10px; font-weight:700; color:var(--t3); letter-spacing:normal; text-transform:none; }
+
+/* FILA MÉTRICA */
+.metric-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--gb); }
+.metric-row:last-child { border-bottom:none; padding-bottom:0; }
+.mr-icon { width:28px; height:28px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.mr-icon svg { width:13px; height:13px; }
+.mr-label { flex:1; font-size:12px; font-weight:700; color:var(--t2); }
+.mr-track { flex:0 0 80px; height:3px; background:var(--gb); border-radius:2px; overflow:hidden; }
+.mr-fill  { height:100%; border-radius:2px; transition:width .5s ease; }
+.mr-val   { font-size:12px; font-weight:900; font-family:'DM Mono',monospace; min-width:44px; text-align:right; }
+.mr-badge { font-size:10px; font-weight:800; padding:2px 8px; border-radius:50px; }
+
+/* BATERÍA VISUAL */
+.bat-visual { display:flex; align-items:center; gap:8px; margin:10px 0 4px; }
+.bat-body {
+    flex:1; height:12px; background:var(--gb); border-radius:3px; overflow:hidden;
+    border:1px solid var(--gb-h); position:relative;
+}
+.bat-fill { height:100%; border-radius:2px; transition:width .6s ease; }
+.bat-tip {
+    width:4px; height:6px; border-radius:0 2px 2px 0;
+    background:var(--gb-h); flex-shrink:0;
+}
+.bat-pct { font-size:14px; font-weight:900; font-family:'DM Mono',monospace; min-width:38px; text-align:right; }
+
+/* SEÑAL RSSI */
+.signal-bars { display:flex; align-items:flex-end; gap:2px; height:18px; }
+.sb { width:5px; border-radius:1px 1px 0 0; }
+
+/* REGISTRO DE ANOMALÍAS */
+.anomaly-row { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--gb); }
+.anomaly-row:last-child { border-bottom:none; padding-bottom:0; }
+.an-mark { width:2px; border-radius:1px; flex-shrink:0; align-self:stretch; margin-top:3px; }
+.an-body { flex:1; }
+.an-title { font-size:12px; font-weight:800; margin-bottom:2px; }
+.an-desc  { font-size:11px; color:var(--t2); line-height:1.5; font-weight:600; }
+.an-time  { font-size:10px; color:var(--t3); margin-top:3px; font-weight:700; font-family:'DM Mono',monospace; }
+
+/* ACCIONES */
+.action-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.act-btn {
+    display:flex; align-items:center; gap:8px;
+    padding:10px 12px; border-radius:12px;
+    border:1px solid var(--gb); background:var(--glass);
+    color:var(--t1); font-size:12px; font-weight:800;
+    cursor:pointer; transition:all .18s; font-family:'Nunito',sans-serif;
+}
+.act-btn:hover { background:var(--glass-h); border-color:var(--gb-h); }
+.act-btn.primary { background:var(--as); border-color:var(--ab); color:var(--accent); }
+.act-btn.danger  { background:var(--rs); border-color:rgba(240,107,107,.2); color:var(--red); }
+.act-btn svg { width:14px; height:14px; stroke:currentColor; flex-shrink:0; }
+
+/* UPTIME TIMELINE */
+.uptime-row { display:flex; gap:2px; margin-top:4px; }
+.ut-seg { flex:1; height:8px; border-radius:1px; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+@keyframes pulse  { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+
+@media(max-width:1060px){ .dev-layout { grid-template-columns:1fr; } .dev-pills { grid-template-columns:1fr 1fr; } }
+@media(max-width:680px) {
+    .content { padding:14px 16px; padding-bottom:88px; }
+    .dev-pills { grid-template-columns:1fr 1fr; }
+    .dev-layout { grid-template-columns:1fr; }
+    .specs-grid { grid-template-columns:1fr 1fr; }
+    .action-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div>
+        <span class="logo-name">Drippie</span>
+    </div>
+    <span class="nav-lbl">Principal</span>
+    <button class="nav-item" onclick="window.location.href='dashboard.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
+    </button>
+    <button class="nav-item" onclick="window.location.href='jardines.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>Mis Jardines
+    </button>
+    <button class="nav-item" onclick="window.location.href='alertas.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Alertas<span class="nav-pip"></span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='estadisticas.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadísticas
+    </button>
+    <span class="nav-lbl">Sistema</span>
+    <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>Dispositivos
+    </button>
+    <button class="nav-item" onclick="window.location.href='configuracion.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Configuración
+    </button>
+    <div class="sidebar-foot">
+        <div class="user-row">
+            <div class="avatar">JD</div>
+            <div class="user-meta"><div class="u-name">Juan Pérez</div></div>
+            <span style="font-size:13px;color:var(--t3)">···</span>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <div class="tb-left">
+            <div class="tb-eyebrow" id="topDate"></div>
+            <div class="tb-title" id="topGreet"></div>
+        </div>
+        <div class="tb-right">
+            <div class="icon-btn" onclick="window.location.href='alertas.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <div class="n-pip"></div>
+            </div>
+            <div class="icon-btn" style="background:var(--as);border-color:var(--ab);font-size:11px;font-weight:800;color:var(--accent)">JD</div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <div class="dev-header">
+            <div>
+                <h2>Dispositivos</h2>
+                <p id="dev-sub">3 sensores vinculados · 2 en línea · 1 con advertencia</p>
+            </div>
+            <button class="btn-pair">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Vincular dispositivo
+            </button>
+        </div>
+
+        <!-- PILLS -->
+        <div class="dev-pills">
+            <div class="dev-pill">
+                <div class="dp-label">Total vinculados</div>
+                <div class="dp-value" style="color:var(--t1)">3</div>
+                <div class="dp-sub">en esta cuenta</div>
+                <div class="dp-bar" style="background:var(--accent);opacity:.3"></div>
+            </div>
+            <div class="dev-pill">
+                <div class="dp-label">En línea</div>
+                <div class="dp-value" style="color:var(--green)">2</div>
+                <div class="dp-sub">conectados ahora</div>
+                <div class="dp-bar" style="background:var(--green);opacity:.3"></div>
+            </div>
+            <div class="dev-pill">
+                <div class="dp-label">Batería crítica</div>
+                <div class="dp-value" style="color:var(--amber)">1</div>
+                <div class="dp-sub">Tomatito — 14%</div>
+                <div class="dp-bar" style="background:var(--amber);opacity:.3"></div>
+            </div>
+            <div class="dev-pill">
+                <div class="dp-label">Anomalías detectadas</div>
+                <div class="dp-value" style="color:var(--red)">1</div>
+                <div class="dp-sub">sensor posiblemente dañado</div>
+                <div class="dp-bar" style="background:var(--red);opacity:.3"></div>
+            </div>
+        </div>
+
+        <!-- LISTA + DETALLE -->
+        <div class="dev-layout">
+
+            <!-- LISTA -->
+            <div class="dev-list" id="devList">
+
+                <div class="dev-row active" onclick="selectDev(0)">
+                    <div class="dev-signal" style="background:var(--ams);border:1px solid rgba(245,166,35,.2)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0121.16 0M5 12.55a11 11 0 0114.08 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                    </div>
+                    <div class="dev-row-info">
+                        <div class="dr-name">DRP-S1 · Tomatito</div>
+                        <div class="dr-sn">SN: DRP-2024-001-A</div>
+                    </div>
+                    <div class="dev-row-meta">
+                        <span class="dev-status-badge dsb-warn"><span class="dsb-dot"></span>Atención</span>
+                        <span class="dr-last">hace 2 min</span>
+                    </div>
+                </div>
+
+                <div class="dev-row" onclick="selectDev(1)">
+                    <div class="dev-signal" style="background:var(--rs);border:1px solid rgba(240,107,107,.2)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0121.16 0M5 12.55a11 11 0 0114.08 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                    </div>
+                    <div class="dev-row-info">
+                        <div class="dr-name">DRP-S1 · Lechuga</div>
+                        <div class="dr-sn">SN: DRP-2024-002-A</div>
+                    </div>
+                    <div class="dev-row-meta">
+                        <span class="dev-status-badge dsb-err"><span class="dsb-dot"></span>Error sensor</span>
+                        <span class="dr-last">hace 5 min</span>
+                    </div>
+                </div>
+
+                <div class="dev-row" onclick="selectDev(2)">
+                    <div class="dev-signal" style="background:var(--gs);border:1px solid rgba(62,207,142,.2)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0121.16 0M5 12.55a11 11 0 0114.08 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                    </div>
+                    <div class="dev-row-info">
+                        <div class="dr-name">DRP-S1 · Huerto Sur</div>
+                        <div class="dr-sn">SN: DRP-2024-003-B</div>
+                    </div>
+                    <div class="dev-row-meta">
+                        <span class="dev-status-badge dsb-ok"><span class="dsb-dot"></span>En línea</span>
+                        <span class="dr-last">hace 1 min</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DETALLE -->
+            <div class="dev-detail" id="devDetail"></div>
+        </div>
+    </div>
+</div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="bnav">
+        <button class="bi" onclick="window.location.href='dashboard.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
+        </button>
+        <button class="bi" onclick="window.location.href='jardines.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>Jardines
+        </button>
+        <button class="bi" style="position:relative" onclick="window.location.href='alertas.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="b-pip"></span>Alertas
+        </button>
+        <button class="bi">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil
+        </button>
+    </div>
+</nav>
+
+<script src="script.js"></script>
+<script>
+const devs = [
+  {
+    id: 0,
+    nombre: 'DRP-S1 · Tomatito',
+    modelo: 'Drippie Sensor Gen 1',
+    sn: 'DRP-2024-001-A',
+    mac: 'A4:CF:12:88:3E:01',
+    fw: 'v2.3.1',
+    hw: 'rev B',
+    jardin: 'Tomatito',
+    status: 'warn',
+    statusLabel: 'Atención',
+    vinculado: '14 oct 2024',
+    ultimaSync: 'Hace 2 min',
+    uptime: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1], // 30 slots = 30 días
+    wifi: { rssi: -68, db: '-68 dBm', red: 'Drippie-Home', calidad: 62 },
+    bateria: { pct: 14, color: '#f5a623', recargando: false, estimado: '~6h restantes' },
+    sensores: [
+      { nombre: 'Humedad suelo', tipo: 'Capacitivo', pct: 78, color: 'var(--blue)', val: '78%', estado: 'ok', nota: null },
+      { nombre: 'Temperatura amb.', tipo: 'NTC 10K', pct: 55, color: 'var(--amber)', val: '22°C', estado: 'ok', nota: null },
+      { nombre: 'Humedad amb.', tipo: 'SHT31', pct: 62, color: 'var(--accent)', val: '62%', estado: 'ok', nota: null },
+      { nombre: 'Fotorresistencia', tipo: 'LDR analógico', pct: 14, color: 'var(--amber)', val: '14 klux', estado: 'warn', nota: 'Valor muy bajo — posible sombra o batería insuficiente' },
+    ],
+    anomalias: [
+      { titulo: 'Batería al 14%', desc: 'La carga solar es insuficiente. El sensor no recibe luz directa.', time: 'Hace 23 min', color: 'var(--amber)' },
+      { titulo: 'Firmware desactualizado', desc: 'Versión v2.3.1 instalada. Disponible v2.4.0 con correcciones de estabilidad.', time: 'Hace 3 días', color: 'var(--t3)' },
+    ],
+  },
+  {
+    id: 1,
+    nombre: 'DRP-S1 · Lechuga',
+    modelo: 'Drippie Sensor Gen 1',
+    sn: 'DRP-2024-002-A',
+    mac: 'A4:CF:12:88:3E:02',
+    fw: 'v2.4.0',
+    hw: 'rev B',
+    jardin: 'Lechuga',
+    status: 'err',
+    statusLabel: 'Error sensor',
+    vinculado: '20 oct 2024',
+    ultimaSync: 'Hace 5 min',
+    uptime: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,0],
+    wifi: { rssi: -55, db: '-55 dBm', red: 'Drippie-Home', calidad: 82 },
+    bateria: { pct: 82, color: 'var(--green)', recargando: true, estimado: 'Cargando · sol directo' },
+    sensores: [
+      { nombre: 'Humedad suelo', tipo: 'Capacitivo', pct: 12, color: 'var(--red)', val: '12%', estado: 'err', nota: 'Lecturas irregulares en los últimos 3 días. El sensor puede estar dañado o desconectado del sustrato.' },
+      { nombre: 'Temperatura amb.', tipo: 'NTC 10K', pct: 38, color: 'var(--blue)', val: '19°C', estado: 'ok', nota: null },
+      { nombre: 'Humedad amb.', tipo: 'SHT31', pct: 55, color: 'var(--accent)', val: '55%', estado: 'ok', nota: null },
+      { nombre: 'Fotorresistencia', tipo: 'LDR analógico', pct: 88, color: 'var(--green)', val: '88 klux', estado: 'ok', nota: null },
+    ],
+    anomalias: [
+      { titulo: 'Sensor de humedad suelo — lecturas anómalas', desc: 'Variaciones de ±40% en menos de 10 min sin evento de riego. Probable falla del sensor capacitivo o mala inserción en el sustrato.', time: 'Hace 2 días', color: 'var(--red)' },
+      { titulo: 'Desconexión breve', desc: '3 desconexiones de WiFi en las últimas 48h. Duración promedio: 4 min.', time: 'Hace 1 día', color: 'var(--amber)' },
+    ],
+  },
+  {
+    id: 2,
+    nombre: 'DRP-S1 · Huerto Sur',
+    modelo: 'Drippie Sensor Gen 1',
+    sn: 'DRP-2024-003-B',
+    mac: 'A4:CF:12:88:3E:03',
+    fw: 'v2.4.0',
+    hw: 'rev C',
+    jardin: 'Huerto Sur',
+    status: 'ok',
+    statusLabel: 'En línea',
+    vinculado: '02 nov 2024',
+    ultimaSync: 'Hace 1 min',
+    uptime: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    wifi: { rssi: -42, db: '-42 dBm', red: 'Drippie-Home', calidad: 97 },
+    bateria: { pct: 98, color: 'var(--green)', recargando: true, estimado: 'Cargando · completa' },
+    sensores: [
+      { nombre: 'Humedad suelo', tipo: 'Capacitivo', pct: 61, color: 'var(--blue)', val: '61%', estado: 'ok', nota: null },
+      { nombre: 'Temperatura amb.', tipo: 'NTC 10K', pct: 65, color: 'var(--amber)', val: '25°C', estado: 'ok', nota: null },
+      { nombre: 'Humedad amb.', tipo: 'SHT31', pct: 48, color: 'var(--accent)', val: '48%', estado: 'ok', nota: null },
+      { nombre: 'Fotorresistencia', tipo: 'LDR analógico', pct: 95, color: 'var(--green)', val: '95 klux', estado: 'ok', nota: null },
+    ],
+    anomalias: [],
+  },
+];
+
+const statusCfg = {
+  ok:   { cls:'dsb-ok',   label:'En línea' },
+  warn: { cls:'dsb-warn', label:'Atención' },
+  err:  { cls:'dsb-err',  label:'Error sensor' },
+  off:  { cls:'dsb-off',  label:'Sin conexión' },
+};
+
+function signalBars(calidad) {
+  const bars = [25,50,75,100];
+  return bars.map(t => {
+    const active = calidad >= t;
+    const c = calidad >= 80 ? 'var(--green)' : calidad >= 50 ? 'var(--amber)' : 'var(--red)';
+    const h = t === 25 ? 5 : t === 50 ? 9 : t === 75 ? 13 : 17;
+    return `<div class="sb" style="height:${h}px;background:${active ? c : 'var(--gb)'};"></div>`;
+  }).join('');
+}
+
+function uptimeDots(arr) {
+  return arr.map(v =>
+    `<div class="ut-seg" title="${v ? 'Online' : 'Offline'}" style="background:${v ? 'var(--green)' : 'var(--red)'};opacity:${v ? .7 : .5};"></div>`
+  ).join('');
+}
+
+function sensorEstadoBadge(e) {
+  if (e === 'err')  return `<span class="mr-badge" style="background:var(--rs);color:var(--red)">Error</span>`;
+  if (e === 'warn') return `<span class="mr-badge" style="background:var(--ams);color:var(--amber)">Alerta</span>`;
+  return '';
+}
+
+function renderDetail(idx) {
+  const d = devs[idx];
+  const cfg = statusCfg[d.status];
+  const batColor = d.bateria.color.startsWith('var') ? d.bateria.color : d.bateria.color;
+
+  document.getElementById('devDetail').innerHTML = `
+
+    <!-- CABECERA -->
+    <div class="ddc">
+      <div class="ddc-top">
+        <div>
+          <div class="ddc-name">${d.nombre}</div>
+          <div class="ddc-model">${d.modelo} · FW ${d.fw} · HW ${d.hw}</div>
+        </div>
+        <div class="ddc-acts">
+          <div class="ddc-btn" title="Reiniciar dispositivo">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          </div>
+          <div class="ddc-btn" title="Configurar">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="specs-grid">
+        <div class="spec-cell"><div class="sc-key">Número de serie</div><div class="sc-val">${d.sn}</div></div>
+        <div class="spec-cell"><div class="sc-key">Dirección MAC</div><div class="sc-val">${d.mac}</div></div>
+        <div class="spec-cell"><div class="sc-key">Jardín asignado</div><div class="sc-val">${d.jardin}</div></div>
+        <div class="spec-cell"><div class="sc-key">Firmware</div><div class="sc-val">${d.fw}</div></div>
+        <div class="spec-cell"><div class="sc-key">Hardware</div><div class="sc-val">${d.hw}</div></div>
+        <div class="spec-cell"><div class="sc-key">Vinculado</div><div class="sc-val">${d.vinculado}</div></div>
+      </div>
+    </div>
+
+    <!-- CONECTIVIDAD + BATERÍA -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+      <!-- WIFI -->
+      <div class="det-section">
+        <div class="det-eye">Conectividad WiFi</div>
+        <div class="metric-row">
+          <div class="mr-icon" style="background:${d.wifi.calidad>=80?'var(--gs)':d.wifi.calidad>=50?'var(--ams)':'var(--rs)'};border:1px solid ${d.wifi.calidad>=80?'rgba(62,207,142,.2)':d.wifi.calidad>=50?'rgba(245,166,35,.2)':'rgba(240,107,107,.2)'}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="${d.wifi.calidad>=80?'var(--green)':d.wifi.calidad>=50?'var(--amber)':'var(--red)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.42 9a16 16 0 0121.16 0M5 12.55a11 11 0 0114.08 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+          </div>
+          <span class="mr-label">Calidad señal</span>
+          <div class="signal-bars">${signalBars(d.wifi.calidad)}</div>
+          <span class="mr-val" style="color:${d.wifi.calidad>=80?'var(--green)':d.wifi.calidad>=50?'var(--amber)':'var(--red)'}">${d.wifi.calidad}%</span>
+        </div>
+        <div class="metric-row">
+          <div class="mr-icon" style="background:var(--t4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <span class="mr-label">RSSI</span>
+          <span class="mr-val" style="color:var(--t2);font-size:11px">${d.wifi.db}</span>
+        </div>
+        <div class="metric-row" style="border:none;padding-bottom:0">
+          <div class="mr-icon" style="background:var(--t4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <span class="mr-label">Red</span>
+          <span class="mr-val" style="color:var(--t2);font-size:10px;font-family:'Nunito',sans-serif;font-weight:800">${d.wifi.red}</span>
+        </div>
+      </div>
+
+      <!-- BATERÍA -->
+      <div class="det-section">
+        <div class="det-eye">Batería solar <span>${d.bateria.recargando ? '⚡ Cargando' : ''}</span></div>
+        <div class="bat-visual">
+          <div class="bat-body">
+            <div class="bat-fill" style="width:${d.bateria.pct}%;background:${d.bateria.color}"></div>
+          </div>
+          <div class="bat-tip"></div>
+          <div class="bat-pct" style="color:${d.bateria.color}">${d.bateria.pct}%</div>
+        </div>
+        <div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:10px">${d.bateria.estimado}</div>
+        <div class="metric-row" style="border:none;padding:0">
+          <div class="mr-icon" style="background:var(--t4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+          </div>
+          <span class="mr-label">Panel solar integrado</span>
+          <span class="mr-badge" style="background:${d.bateria.recargando?'var(--gs)':'var(--t4)'};color:${d.bateria.recargando?'var(--green)':'var(--t2)'}">
+            ${d.bateria.recargando ? 'Activo' : 'Sin luz'}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SENSORES -->
+    <div class="det-section">
+      <div class="det-eye">Estado de sensores <span>Última lectura: ${d.ultimaSync}</span></div>
+      ${d.sensores.map(s => `
+        <div class="metric-row" style="${s.nota ? 'flex-wrap:wrap;' : ''}">
+          <div class="mr-icon" style="background:${s.estado==='err'?'var(--rs)':s.estado==='warn'?'var(--ams)':'rgba(255,255,255,.05)'};border:1px solid ${s.estado==='err'?'rgba(240,107,107,.2)':s.estado==='warn'?'rgba(245,166,35,.2)':'var(--gb)'}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="${s.estado==='err'?'var(--red)':s.estado==='warn'?'var(--amber)':s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:800;color:var(--t1)">${s.nombre}</div>
+            <div style="font-size:10px;color:var(--t3);font-weight:700">${s.tipo}</div>
+          </div>
+          <div class="mr-track"><div class="mr-fill" style="width:${s.pct}%;background:${s.color}"></div></div>
+          <span class="mr-val" style="color:${s.color}">${s.val}</span>
+          ${sensorEstadoBadge(s.estado)}
+          ${s.nota ? `<div style="width:100%;padding:6px 0 0 36px;font-size:11px;color:${s.estado==='err'?'var(--red)':'var(--amber)'};font-weight:700;line-height:1.5">${s.nota}</div>` : ''}
+        </div>`).join('')}
+    </div>
+
+    <!-- UPTIME 30 DÍAS -->
+    <div class="det-section">
+      <div class="det-eye">Disponibilidad — últimos 30 días <span style="color:var(--green)">${Math.round(d.uptime.filter(v=>v).length/d.uptime.length*100)}% uptime</span></div>
+      <div class="uptime-row">${uptimeDots(d.uptime)}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:10px;color:var(--t4);font-weight:700">Hace 30 días</span>
+        <span style="font-size:10px;color:var(--t4);font-weight:700">Hoy</span>
+      </div>
+    </div>
+
+    <!-- ANOMALÍAS -->
+    <div class="det-section">
+      <div class="det-eye">Registro de anomalías</div>
+      ${d.anomalias.length === 0
+        ? `<div style="text-align:center;padding:16px 0;font-size:12px;color:var(--t3);font-weight:700">Sin anomalías detectadas — todo en orden</div>`
+        : d.anomalias.map(a => `
+          <div class="anomaly-row">
+            <div class="an-mark" style="background:${a.color}"></div>
+            <div class="an-body">
+              <div class="an-title">${a.titulo}</div>
+              <div class="an-desc">${a.desc}</div>
+              <div class="an-time">${a.time}</div>
+            </div>
+          </div>`).join('')}
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="det-section">
+      <div class="det-eye">Acciones del dispositivo</div>
+      <div class="action-grid">
+        <button class="act-btn primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Reiniciar módulo
+        </button>
+        <button class="act-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          Actualizar firmware
+        </button>
+        <button class="act-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Renombrar dispositivo
+        </button>
+        <button class="act-btn danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Desvincular
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function selectDev(idx) {
+  document.querySelectorAll('.dev-row').forEach((r,i) => r.classList.toggle('active', i===idx));
+  renderDetail(idx);
+  // animación
+  const d = document.getElementById('devDetail');
+  d.style.animation = 'none'; d.offsetHeight; d.style.animation = '';
+}
+
+renderDetail(0);
+</script>
+</body>
+</html>

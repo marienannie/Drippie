@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Drippie</title>
+</head>
+<body>
+    <!-- BURBUJITAS DEL FONDO -->
+    <div class="bg-orbs riego-orbs" id="bgOrbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- TODO LO DEMáS -->
+    <div id="home-container">
+        <!-- EL CARRUSEL -->
+        <div class="carousel-track-wrapper">
+            <div class="carousel-track" id="track">
+                <div class="home-card riego active">
+                    <div class="icon-wrapper">
+                        <div class="icon-glow"></div>
+                        <div class="icon-glass">
+                            <img src="media/gota-de-agua.png" alt="Gota de agua" class="icon-agua">
+                        </div>
+                    </div>
+
+                    <div class="card-text">
+                        <h3>Riego Inteligente</h3>
+                        <span>Monitorea y controla el riego de tus plantas automáticamente con sensores IoT</span>
+                    </div>
+                </div>
+
+                <div class="home-card monitoreo">
+                    <div class="icon-wrapper">
+                        <div class="icon-glow"></div>
+                        <div class="icon-glass">
+                            <img src="media/velocidad.png" alt="Monitoreo">
+                        </div>
+                    </div>
+                    <div class="card-text">
+                        <h3>Monitoreo en Tiempo Real</h3>
+                        <span>Sigue la humedad, temperatura y nivel del agua desde cualquier lugar del mundo</span>
+                    </div>
+                </div>
+
+                <div class="home-card wifi">
+                    <div class="icon-wrapper">
+                        <div class="icon-glow"></div>
+                        <div class="icon-glass">
+                            <img src="media/wifi.png" alt="WiFi">
+                        </div>
+                    </div>
+                    <div class="card-text">
+                        <h3>Funciona sin conexión</h3>
+                        <span>Los dispositivos operan incluso sin Internet, asegurando la salud de tus plantas siempre</span>
+                    </div>
+                </div>
+
+                <div class="home-card nube">
+                    <div class="icon-wrapper">
+                        <div class="icon-glow"></div>
+                        <div class="icon-glass">
+                            <img src="media/cloud.png" alt="Nube">
+                        </div>
+                    </div>
+                    <div class="card-text">
+                        <h3>Sincronización en la nube</h3>
+                        <span>Accede al historial, acciones y maneja múltiples áreas de cultivo desde la nube</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LOS PUNTITOS DE ABAJO -->
+        <div class="dots" id="dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="home-buttons">
+            <button class="btn-next" id="btnNext">Siguiente</button>
+            <button class="btn-skip" id="btnSkip">Saltar</button>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

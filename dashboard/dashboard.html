@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style/dashboard.css">
+<title>Drippie</title>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+
+<!-- Navegador Lateral Izquierda -->
+<aside class="sidebar" id="sidebar">
+
+    <!-- Logo DRIPPIE -->
+    <div class="logo">
+        <div class="logo-mark">
+            <svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>
+        </div>
+        <span class="logo-name">Drippie</span>
+    </div>
+
+    <span class="nav-lbl">Principal</span>
+
+    <!-- NI INICIO -->
+    <button class="nav-item active" onclick="window.location.href = '#';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Inicio
+    </button>
+
+    <!-- NI MIS JARDINES -->
+    <button class="nav-item" onclick="window.location.href = 'jardines.html';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+        Mis Jardines
+    </button>
+
+    <!-- NI ALERTAS -->
+    <button class="nav-item" onclick="window.location.href = 'alertas.html';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Alertas
+        <span class="nav-pip"></span>
+    </button>
+
+    <!-- NI ESTADISCTICAS -->
+    <button class="nav-item" onclick="window.location.href = 'estadisticas.html';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estadísticas
+    </button>
+
+    <span class="nav-lbl">Sistema</span>
+
+    <!-- NI DISPOSITIVOS -->
+    <button class="nav-item" onclick="window.location.href = 'dispositivos.html';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
+        Dispositivos
+    </button>
+
+    <!-- NI CONFIGURACIóN -->
+    <button class="nav-item" onclick="window.location.href = 'configuracion.html';">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+    </button>
+
+    <!-- PERFIL USUARIO -->
+    <div class="sidebar-foot">
+        <div class="user-row">
+            <div class="avatar">JD</div>
+            <div class="user-meta">
+                <div class="u-name">Juan Peréz</div>
+            </div>
+            <span style="font-size:13px;color:var(--t3);">···</span>
+        </div>
+    </div>
+</aside>
+
+<!-- MAIN  -->
+<div class="main">
+    <header class="topbar">
+
+        <!-- BOTON QUE DESPLIEGA EL PANEL EN PANTALLAS CHICAS -->
+        <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <div class="tb-left">
+
+            <!-- FECHA Y SALUDO -->
+            <div class="tb-eyebrow" id="topDate"></div>
+            <div class="tb-title" id="topGreet"></div>
+        </div>
+        <div class="tb-right">
+
+            <!-- BOTON ALERTA -->
+            <div class="icon-btn" onclick="window.location.href = 'alertas.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <div class="n-pip"></div>
+            </div>
+
+            <!-- BOTON PERFIL -->
+            <div class="icon-btn" style="background:var(--as);border-color:var(--ab);font-size:11px;font-weight:800;color:var(--accent);">JP</div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- ESTADISTICAS DIARIAS -->
+        <div class="stats-row">
+            <div class="stat-pill">
+                <div class="sp-label">Agua consumida hoy</div>
+                <div class="sp-value" style="color:var(--blue)">2.4<span style="font-size:15px;opacity:.55">L</span></div>
+                <div class="sp-delta d-neg">↓ 12% respecto a ayer</div>
+                <div class="sp-bar" style="background:var(--blue);opacity:.25;"></div>
+            </div>
+            <div class="stat-pill">
+                <div class="sp-label">Jardines activos</div>
+                <div class="sp-value" style="color:var(--green)">3</div>
+                <div class="sp-delta d-pos">+ 1 nuevo esta semana</div>
+                <div class="sp-bar" style="background:var(--green);opacity:.25;"></div>
+            </div>
+            <div class="stat-pill">
+                <div class="sp-label">Sensor con batería crítica</div>
+                <div class="sp-value" style="color:var(--amber)">1</div>
+                <div class="sp-delta" style="color:var(--t3)">Tomatito — 14% restante</div>
+                <div class="sp-bar" style="background:var(--amber);opacity:.25;"></div>
+            </div>
+            <div class="stat-pill">
+                <div class="sp-label">Alertas sin resolver</div>
+                <div class="sp-value" style="color:var(--red)">2</div>
+                <div class="sp-delta d-neg">+ 1 desde ayer</div>
+                <div class="sp-bar" style="background:var(--red);opacity:.25;"></div>
+            </div>
+        </div>
+
+        <!-- CLIMA ACTUAL -->
+        <div class="card weather-card">
+            <div class="card-eye">Condiciones climáticas</div>
+            <div class="w-top">
+                <div>
+                    <div class="w-loc">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Navojoa, Sonora, México
+                    </div>
+                    <div class="w-temp">24°</div>
+                    <div class="w-desc">Soleado · Sensación térmica 28°</div>
+                    <div class="riego-pill ok"><span class="rdot"></span>Condiciones ideales · sin riego en 3 h</div>
+                </div>
+                <div class="w-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </div>
+            </div>
+            <div class="w-grid">
+                <div class="wg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 12H2M22 12h-3"/></svg>
+                    <div class="wg-val" style="color:var(--blue)">65%</div><div class="wg-lbl">Humedad</div>
+                </div>
+                <div class="wg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>
+                    <div class="wg-val">12 km/h</div><div class="wg-lbl">Viento</div>
+                </div>
+                <div class="wg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                    <div class="wg-val" style="color:var(--amber)">UV 6</div><div class="wg-lbl">Índice UV</div>
+                </div>
+                <div class="wg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <div class="wg-val" style="color:var(--green)">Ideal</div><div class="wg-lbl">Cond. riego</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERTAS -->
+        <div class="card alerts-card">
+            <div class="card-eye">Alertas activas <a href="alertas.html">Ver todas</a></div>
+            <div class="alert-row">
+                <div class="alert-mark" style="background:var(--amber);"></div>
+                <div class="alert-body">
+                    <div class="a-title">Tomatito — batería baja</div>
+                    <div class="a-desc">El sensor no recibe suficiente luz solar. Se recomienda reubicar el módulo.</div>
+                    <div class="a-time">Hace 23 min</div>
+                </div>
+            </div>
+            <div class="alert-row">
+                <div class="alert-mark" style="background:var(--red);"></div>
+                <div class="alert-body">
+                    <div class="a-title">Lechuga — sin fuente de agua</div>
+                    <div class="a-desc">El módulo puede haberse quedado sin suministro. Verifica la línea.</div>
+                    <div class="a-time">Hoy, 6:37 pm</div>
+                </div>
+            </div>
+            <div class="alert-row">
+                <div class="alert-mark" style="background:var(--green);"></div>
+                <div class="alert-body">
+                    <div class="a-title">Huerto Sur — riego completado</div>
+                    <div class="a-desc">0.8 L aplicados en el ciclo programado sin incidencias.</div>
+                    <div class="a-time">Hoy, 7:00 am</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JARDINES -->
+        <div class="card jardines-card">
+            <div class="card-eye">Mis Jardines <a href="jardines.html">+ Agregar</a></div>
+            <div class="jardines-grid">
+
+                <div class="jardin-tile">
+                    <div class="jthumb">
+                        <img src="/media/tomate.jpg" alt="">
+                        <div class="jsbadge" style="background:var(--amber);"></div>
+                    </div>
+                    <div class="jbody">
+                        <div class="j-name">Tomatito</div>
+                        <div class="j-type">Tomate Cherry · Maceta</div>
+                        <div class="j-metrics">
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:78%;background:var(--blue);"></div></div>
+                                <span class="jm-val" style="color:var(--blue)">78%</span>
+                            </div>
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:60%;background:var(--amber);"></div></div>
+                                <span class="jm-val" style="color:var(--amber)">22°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jardin-tile">
+                    <div class="jthumb">
+                        <img src="/media/lechuga.webp" alt="">
+                        <div class="jsbadge" style="background:var(--red);"></div>
+                    </div>
+                    <div class="jbody">
+                        <div class="j-name">Lechuga</div>
+                        <div class="j-type">Lechuga romana · Huerto</div>
+                        <div class="j-metrics">
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:12%;background:var(--red);"></div></div>
+                                <span class="jm-val" style="color:var(--red)">12%</span>
+                            </div>
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:45%;background:var(--amber);"></div></div>
+                                <span class="jm-val" style="color:var(--amber)">19°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jardin-tile">
+                    <div class="jthumb">
+                        <img src="/media/jalapeño.jpg" alt="">
+                        <div class="jsbadge" style="background:var(--green);"></div>
+                    </div>
+                    <div class="jbody">
+                        <div class="j-name">Huerto Sur</div>
+                        <div class="j-type">Chile jalapeño · Exterior</div>
+                        <div class="j-metrics">
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:61%;background:var(--blue);"></div></div>
+                                <span class="jm-val" style="color:var(--blue)">61%</span>
+                            </div>
+                            <div class="jm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+                                <div class="jm-track"><div class="jm-fill" style="width:72%;background:var(--amber);"></div></div>
+                                <span class="jm-val" style="color:var(--amber)">25°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="add-tile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <span>Nuevo jardín</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RECOMENDACIONES -->
+        <div class="card reco-card">
+            <div class="card-eye">Recomendaciones</div>
+            <div class="reco-row">
+                <div class="reco-icon" style="background:var(--gs);border:1px solid rgba(62,207,142,.14);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 12 7 10 7 5a5 5 0 0110 0c0 5-5 7-5 7z"/></svg>
+                </div>
+                <div>
+                    <div class="r-title">Temporada ideal para chiles</div>
+                    <div class="r-desc">Condiciones perfectas para jalapeños esta semana. Considera ampliar el Huerto Sur.</div>
+                </div>
+            </div>
+            <div class="reco-row">
+                <div class="reco-icon" style="background:var(--ams);border:1px solid rgba(245,166,35,.14);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                </div>
+                <div>
+                    <div class="r-title">Mueve Tomatito</div>
+                    <div class="r-desc">Reubica el módulo a un área con más sol directo para mejorar la carga del sensor.</div>
+                </div>
+            </div>
+            <div class="reco-row">
+                <div class="reco-icon" style="background:var(--bs);border:1px solid rgba(91,173,234,.14);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                </div>
+                <div>
+                    <div class="r-title">Reduce riego nocturno</div>
+                    <div class="r-desc">Con 65% de humedad, puedes bajar el ciclo nocturno en Huerto Sur un 20%.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!-- NAVEGADOR INFERIOR QUE APARECE EN PANTALLAS PEQUEÑAS / MóVILES-->
+<nav class="bottom-nav">
+    <div class="bnav">
+        <button class="bi active">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio
+        </button>
+        <button class="bi" onclick="window.location.href = 'jardines.html';">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            Jardines
+        </button>
+        <button class="bi" style="position:relative;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="b-pip"></span>
+            Alertas
+        </button>
+        <button class="bi" onclick="window.location.href = 'perfil.html';">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Perfil
+        </button>
+    </div>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>

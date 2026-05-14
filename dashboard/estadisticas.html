@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title>Drippie – Estadísticas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+.content { padding: 20px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ── HEADER ── */
+.stats-page-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.stats-page-header h2 { font-size: 22px; font-weight: 900; letter-spacing: -.4px; }
+.stats-page-header p { font-size: 12px; color: var(--t3); font-weight: 600; margin-top: 2px; }
+
+.period-tabs {
+    display: flex; background: var(--glass); border: 1px solid var(--gb);
+    border-radius: 12px; padding: 3px; gap: 2px;
+}
+.period-tab {
+    padding: 6px 14px; border-radius: 9px; font-size: 12px; font-weight: 800;
+    color: var(--t3); cursor: pointer; transition: all .2s;
+    border: none; background: none; font-family: 'Nunito', sans-serif;
+}
+.period-tab.active { background: var(--as); color: var(--accent); border: 1px solid var(--ab); }
+
+/* ── KPIS ROW ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-card {
+    background: var(--glass); border: 1px solid var(--gb); border-radius: 16px;
+    padding: 16px 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden; transition: border-color .2s;
+}
+.kpi-card::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.kpi-card:hover { border-color: var(--gb-h); }
+.kpi-label { font-size: 10px; font-weight: 800; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 900; font-family: 'DM Mono', monospace; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.kpi-sub { font-size: 11px; font-weight: 700; color: var(--t3); }
+.kpi-delta { font-size: 11px; font-weight: 800; margin-top: 4px; }
+.kpi-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; border-radius: 0 0 16px 16px; }
+.d-up { color: var(--green); } .d-dn { color: var(--red); }
+
+/* ── GRID DE GRÁFICAS ── */
+.charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+.charts-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.charts-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* ── CHART CARD ── */
+.chart-card {
+    background: var(--glass); border: 1px solid var(--gb); border-radius: var(--r);
+    padding: 20px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden; transition: border-color .2s;
+}
+.chart-card::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.chart-card:hover { border-color: var(--gb-h); }
+.cc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.cc-title { font-size: 13px; font-weight: 900; color: var(--t1); margin-bottom: 3px; }
+.cc-sub { font-size: 11px; color: var(--t3); font-weight: 600; }
+.cc-legend { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; color: var(--t3); white-space: nowrap; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-line { width: 14px; height: 2px; border-radius: 1px; flex-shrink: 0; }
+.chart-wrap { position: relative; width: 100%; }
+
+/* selector de jardín */
+.jardin-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+.js-btn {
+    padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 800;
+    cursor: pointer; transition: all .18s; border: 1px solid var(--gb);
+    background: var(--glass); color: var(--t3); font-family: 'Nunito', sans-serif;
+}
+.js-btn:hover { color: var(--t1); border-color: var(--gb-h); }
+.js-btn.active { background: var(--as); border-color: var(--ab); color: var(--accent); }
+
+/* ── CLIMA CARD ── */
+.clima-card {
+    background: var(--glass); border: 1px solid var(--gb); border-radius: var(--r);
+    padding: 20px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden;
+}
+.clima-card::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(91,173,234,0.06) 0%,transparent 60%); pointer-events:none; }
+.clima-week { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-top: 14px; }
+.clima-day {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 10px 4px; border-radius: 12px; background: rgba(255,255,255,.03);
+    border: 1px solid var(--gb); transition: all .18s; cursor: default;
+}
+.clima-day.today { background: var(--as); border-color: var(--ab); }
+.cd-name { font-size: 9px; font-weight: 800; color: var(--t3); letter-spacing: .06em; text-transform: uppercase; }
+.cd-icon { font-size: 18px; line-height: 1; }
+.cd-temp { font-size: 12px; font-weight: 900; font-family: 'DM Mono', monospace; color: var(--t1); }
+.cd-hum { font-size: 9px; font-weight: 700; color: var(--blue); }
+.cd-riego { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ── RANKING ── */
+.ranking-list { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+.rank-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--gb);
+}
+.rank-row:last-child { border-bottom: none; padding-bottom: 0; }
+.rank-num { font-size: 11px; font-weight: 900; font-family: 'DM Mono', monospace; color: var(--t4); min-width: 14px; }
+.rank-icon { width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rank-icon svg { width: 13px; height: 13px; }
+.rank-info { flex: 1; min-width: 0; }
+.rank-name { font-size: 12px; font-weight: 800; color: var(--t1); }
+.rank-sub { font-size: 10px; color: var(--t3); font-weight: 600; }
+.rank-track { flex: 0 0 80px; height: 3px; background: var(--gb); border-radius: 2px; overflow: hidden; }
+.rank-fill { height: 100%; border-radius: 2px; }
+.rank-val { font-size: 12px; font-weight: 900; font-family: 'DM Mono', monospace; min-width: 36px; text-align: right; }
+
+/* ── MINI SPARKLINES ── */
+.spark-row { display: flex; align-items: flex-end; gap: 2px; height: 24px; margin-top: 6px; }
+.spark-bar { flex: 1; border-radius: 1px 1px 0 0; min-width: 0; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+.chart-card, .kpi-card, .clima-card { animation: fadeUp .35s ease both; }
+.kpi-card:nth-child(1){animation-delay:.04s;} .kpi-card:nth-child(2){animation-delay:.08s;}
+.kpi-card:nth-child(3){animation-delay:.12s;} .kpi-card:nth-child(4){animation-delay:.16s;}
+
+@media(max-width:1100px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .charts-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:680px) {
+    .content { padding: 14px 16px; padding-bottom: 88px; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .charts-grid-2, .charts-grid-3 { grid-template-columns: 1fr; }
+    .clima-week { grid-template-columns: repeat(7,1fr); gap: 3px; }
+    .cd-icon { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div>
+        <span class="logo-name">Drippie</span>
+    </div>
+    <span class="nav-lbl">Principal</span>
+    <button class="nav-item" onclick="window.location.href='dashboard.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Inicio
+    </button>
+    <button class="nav-item" onclick="window.location.href='jardines.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+        Mis Jardines
+    </button>
+    <button class="nav-item" onclick="window.location.href='alertas.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Alertas <span class="nav-pip"></span>
+    </button>
+    <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estadísticas
+    </button>
+    <span class="nav-lbl">Sistema</span>
+    <button class="nav-item" onclick="window.location.href='dispositivos.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
+        Dispositivos
+    </button>
+    <button class="nav-item" onclick="window.location.href='configuracion.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+    </button>
+    <div class="sidebar-foot">
+        <div class="user-row">
+            <div class="avatar">JD</div>
+            <div class="user-meta"><div class="u-name">Juan Pérez</div></div>
+            <span style="font-size:13px;color:var(--t3);">···</span>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <div class="tb-left">
+            <div class="tb-eyebrow" id="topDate"></div>
+            <div class="tb-title" id="topGreet"></div>
+        </div>
+        <div class="tb-right">
+            <div class="icon-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <div class="n-pip"></div>
+            </div>
+            <div class="icon-btn" style="background:var(--as);border-color:var(--ab);font-size:11px;font-weight:800;color:var(--accent);">JD</div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- HEADER + PERÍODO -->
+        <div class="stats-page-header">
+            <div>
+                <h2>Estadísticas</h2>
+                <p id="period-label">Últimos 7 días · 3 jardines</p>
+            </div>
+            <div class="period-tabs">
+                <button class="period-tab" onclick="setPeriod('dia')">Hoy</button>
+                <button class="period-tab active" id="tab-semana" onclick="setPeriod('semana')">Semana</button>
+                <button class="period-tab" onclick="setPeriod('mes')">Mes</button>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">Agua total</div>
+                <div class="kpi-value" style="color:var(--blue)" id="kpi-agua">18.4<span style="font-size:14px;opacity:.5">L</span></div>
+                <div class="kpi-sub">esta semana</div>
+                <div class="kpi-delta d-dn" id="kpi-agua-d">↓ 8% vs semana anterior</div>
+                <div class="kpi-bar" style="background:var(--blue);opacity:.28;"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Riegos completados</div>
+                <div class="kpi-value" style="color:var(--green)" id="kpi-riegos">21</div>
+                <div class="kpi-sub">7 por jardín promedio</div>
+                <div class="kpi-delta d-up" id="kpi-riegos-d">↑ 3 más que la semana pasada</div>
+                <div class="kpi-bar" style="background:var(--green);opacity:.28;"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Humedad promedio suelo</div>
+                <div class="kpi-value" style="color:var(--accent)" id="kpi-hum">64<span style="font-size:14px;opacity:.5">%</span></div>
+                <div class="kpi-sub">los 3 jardines</div>
+                <div class="kpi-delta d-up" id="kpi-hum-d">↑ 5% respecto a semana anterior</div>
+                <div class="kpi-bar" style="background:var(--accent);opacity:.28;"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Temp. promedio</div>
+                <div class="kpi-value" style="color:var(--amber)" id="kpi-temp">23<span style="font-size:14px;opacity:.5">°C</span></div>
+                <div class="kpi-sub">zona del cultivo</div>
+                <div class="kpi-delta" style="color:var(--t3)" id="kpi-temp-d">Estable respecto al período anterior</div>
+                <div class="kpi-bar" style="background:var(--amber);opacity:.28;"></div>
+            </div>
+        </div>
+
+        <!-- FILA 1: Agua consumida (grande) + Pronóstico clima -->
+        <div class="charts-grid">
+
+            <!-- Agua consumida por día -->
+            <div class="chart-card">
+                <div class="cc-header">
+                    <div>
+                        <div class="cc-title">Consumo de agua diario</div>
+                        <div class="cc-sub">Litros por jardín · últimos 7 días</div>
+                    </div>
+                    <div class="cc-legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#5badea;"></div>Tomatito</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#3ecf8e;"></div>Lechuga</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#9d83ed;"></div>Huerto Sur</div>
+                    </div>
+                </div>
+                <div class="chart-wrap" style="height:200px;">
+                    <canvas id="chart-agua"></canvas>
+                </div>
+            </div>
+
+            <!-- Pronóstico + clima semana -->
+            <div class="clima-card">
+                <div class="cc-header" style="margin-bottom:0;">
+                    <div>
+                        <div class="cc-title">Clima de la zona</div>
+                        <div class="cc-sub">Navojoa, Sonora · próximos 7 días</div>
+                    </div>
+                </div>
+                <div class="clima-week" id="climaWeek"></div>
+            </div>
+
+        </div>
+
+        <!-- FILA 2: Humedad suelo por planta -->
+        <div class="chart-card">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-title">Humedad del suelo por jardín</div>
+                    <div class="cc-sub">Porcentaje diario · últimos 7 días</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <div class="jardin-selector" id="humedadSelector">
+                        <button class="js-btn active" onclick="toggleHumedad('tomatito',this)">Tomatito</button>
+                        <button class="js-btn active" onclick="toggleHumedad('lechuga',this)">Lechuga</button>
+                        <button class="js-btn active" onclick="toggleHumedad('huerto',this)">Huerto Sur</button>
+                    </div>
+                    <div class="cc-legend" style="margin-left:8px;">
+                        <div class="legend-item"><div class="legend-line" style="background:#5badea;"></div>Tomatito</div>
+                        <div class="legend-item"><div class="legend-line" style="background:#3ecf8e;"></div>Lechuga</div>
+                        <div class="legend-item"><div class="legend-line" style="background:#9d83ed;"></div>Huerto Sur</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrap" style="height:200px;">
+                <canvas id="chart-humedad"></canvas>
+            </div>
+        </div>
+
+        <!-- FILA 3: Temperatura + Luz -->
+        <div class="charts-grid-2">
+
+            <div class="chart-card">
+                <div class="cc-header">
+                    <div>
+                        <div class="cc-title">Temperatura ambiente</div>
+                        <div class="cc-sub">°C por jardín · últimos 7 días</div>
+                    </div>
+                    <div class="cc-legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#5badea;"></div>Tomatito</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#9d83ed;"></div>Huerto Sur</div>
+                    </div>
+                </div>
+                <div class="chart-wrap" style="height:170px;">
+                    <canvas id="chart-temp"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="cc-header">
+                    <div>
+                        <div class="cc-title">Intensidad lumínica promedio</div>
+                        <div class="cc-sub">klux · últimos 7 días</div>
+                    </div>
+                    <div class="cc-legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#f5a623;"></div>Tomatito</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#3ecf8e;"></div>Lechuga</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#9d83ed;"></div>Huerto Sur</div>
+                    </div>
+                </div>
+                <div class="chart-wrap" style="height:170px;">
+                    <canvas id="chart-luz"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FILA 4: Distribución agua (donut) + Ranking eficiencia + Humedad ambiente -->
+        <div class="charts-grid-3">
+
+            <div class="chart-card">
+                <div class="cc-header"><div>
+                    <div class="cc-title">Distribución del agua</div>
+                    <div class="cc-sub">Por jardín esta semana</div>
+                </div></div>
+                <div class="chart-wrap" style="height:160px;">
+                    <canvas id="chart-donut"></canvas>
+                </div>
+                <div class="cc-legend" style="justify-content:center;margin-top:10px;gap:14px;">
+                    <div class="legend-item"><div class="legend-dot" style="background:#5badea;"></div>Tomatito 35%</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#3ecf8e;"></div>Lechuga 42%</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#9d83ed;"></div>Huerto 23%</div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="cc-header"><div>
+                    <div class="cc-title">Eficiencia de riego</div>
+                    <div class="cc-sub">Agua usada vs humedad obtenida</div>
+                </div></div>
+                <div class="ranking-list">
+                    <div class="rank-row">
+                        <div class="rank-num">01</div>
+                        <div class="rank-icon" style="background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.2);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 12 7 10 7 5a5 5 0 0110 0c0 5-5 7-5 7z"/></svg>
+                        </div>
+                        <div class="rank-info"><div class="rank-name">Huerto Sur</div><div class="rank-sub">4.2 L · +12% humedad</div></div>
+                        <div class="rank-track"><div class="rank-fill" style="width:94%;background:var(--green);"></div></div>
+                        <div class="rank-val" style="color:var(--green)">94%</div>
+                    </div>
+                    <div class="rank-row">
+                        <div class="rank-num">02</div>
+                        <div class="rank-icon" style="background:rgba(91,173,234,.1);border:1px solid rgba(91,173,234,.2);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 8V4M12 20v-4M8 12H4M20 12h-4"/></svg>
+                        </div>
+                        <div class="rank-info"><div class="rank-name">Tomatito</div><div class="rank-sub">6.4 L · +9% humedad</div></div>
+                        <div class="rank-track"><div class="rank-fill" style="width:71%;background:var(--blue);"></div></div>
+                        <div class="rank-val" style="color:var(--blue)">71%</div>
+                    </div>
+                    <div class="rank-row">
+                        <div class="rank-num">03</div>
+                        <div class="rank-icon" style="background:rgba(240,107,107,.1);border:1px solid rgba(240,107,107,.2);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.2M9.5 9.4c.73-2.27 2.73-4.07 5.5-4.07 3.5 0 6 3 6 6.6 0 6.07-7 10.07-9 11.07"/></svg>
+                        </div>
+                        <div class="rank-info"><div class="rank-name">Lechuga</div><div class="rank-sub">7.8 L · alerta activa</div></div>
+                        <div class="rank-track"><div class="rank-fill" style="width:38%;background:var(--red);"></div></div>
+                        <div class="rank-val" style="color:var(--red)">38%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="cc-header"><div>
+                    <div class="cc-title">Humedad ambiente</div>
+                    <div class="cc-sub">% diario · zona de cultivo</div>
+                </div></div>
+                <div class="chart-wrap" style="height:160px;">
+                    <canvas id="chart-humamb"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="bnav">
+        <button class="bi" onclick="window.location.href='dashboard.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio
+        </button>
+        <button class="bi" onclick="window.location.href='jardines.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            Jardines
+        </button>
+        <button class="bi" style="position:relative;" onclick="window.location.href='alertas.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="b-pip"></span>
+            Alertas
+        </button>
+        <button class="bi active">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Stats
+        </button>
+    </div>
+</nav>
+
+<script src="script.js"></script>
+<script>
+/* ══════════════════════════════════
+   CHART.JS CONFIG GLOBAL
+══════════════════════════════════ */
+Chart.defaults.color = 'rgba(255,255,255,0.35)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 10;
+
+const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+/* ── DATOS SEMANA ── */
+const dataWeek = {
+    agua: {
+        tomatito:  [0.8, 0.6, 0.9, 0.6, 0.8, 0.6, 1.1],
+        lechuga:   [1.0, 1.2, 0.0, 1.1, 1.2, 1.0, 0.0],
+        huerto:    [0.4, 0.4, 0.5, 0.4, 0.4, 0.3, 0.8],
+    },
+    humSuelo: {
+        tomatito:  [72, 75, 70, 74, 76, 78, 78],
+        lechuga:   [55, 60, 18, 40, 48, 52, 12],
+        huerto:    [58, 62, 64, 60, 63, 61, 61],
+    },
+    temp: {
+        tomatito:  [20, 21, 22, 21, 22, 23, 22],
+        huerto:    [24, 25, 26, 24, 25, 26, 25],
+    },
+    luz: {
+        tomatito:  [12, 14, 10, 13, 15, 16, 14],
+        lechuga:   [80, 85, 90, 88, 85, 90, 88],
+        huerto:    [90, 92, 95, 94, 96, 95, 95],
+    },
+    humAmb:        [58, 60, 62, 64, 61, 59, 62],
+};
+
+/* ── DATOS HOY ── */
+const HOURS = ['6am','8am','10am','12pm','2pm','4pm','6pm','8pm'];
+const dataDay = {
+    agua: { tomatito:[0,0,0,0.3,0,0,0.3,0], lechuga:[0,0,0,0,0,0,0,0], huerto:[0,0,0,0.4,0,0,0,0] },
+    humSuelo: { tomatito:[74,73,72,76,75,77,78,78], lechuga:[14,13,12,12,12,12,12,12], huerto:[60,60,61,65,63,62,61,61] },
+    temp: { tomatito:[20,20,21,23,24,24,23,22], huerto:[23,23,24,27,28,28,26,25] },
+    luz: { tomatito:[0,2,8,14,18,16,10,3], lechuga:[0,5,60,88,95,90,70,20], huerto:[0,5,65,95,98,96,75,22] },
+    humAmb: [62,61,60,58,57,58,60,62],
+};
+
+/* ── DATOS MES ── */
+const WEEKS = ['Sem 1','Sem 2','Sem 3','Sem 4'];
+const dataMonth = {
+    agua: { tomatito:[5.2,6.1,5.8,6.4], lechuga:[7.0,7.5,6.2,7.8], huerto:[3.8,4.0,3.9,4.2] },
+    humSuelo: { tomatito:[70,72,68,74], lechuga:[50,55,45,30], huerto:[60,62,58,61] },
+    temp: { tomatito:[19,21,22,22], huerto:[22,24,25,25] },
+    luz: { tomatito:[12,13,14,14], lechuga:[82,85,88,88], huerto:[90,92,94,95] },
+    humAmb: [58,60,63,62],
+};
+
+let currentPeriod = 'semana';
+let humedadVisible = { tomatito: true, lechuga: true, huerto: true };
+let charts = {};
+
+function getLabels(p) {
+    return p === 'dia' ? HOURS : p === 'mes' ? WEEKS : DAYS;
+}
+function getData(p) {
+    return p === 'dia' ? dataDay : p === 'mes' ? dataMonth : dataWeek;
+}
+
+/* ══════════════════════════════════
+   HELPERS
+══════════════════════════════════ */
+function makeGradient(ctx, color, alpha1 = 0.35, alpha2 = 0) {
+    const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.parentElement.offsetHeight || 200);
+    g.addColorStop(0, color.replace(')', `,${alpha1})`).replace('rgb', 'rgba'));
+    g.addColorStop(1, color.replace(')', `,${alpha2})`).replace('rgb', 'rgba'));
+    return g;
+}
+
+const C = {
+    blue:   '#5badea',
+    green:  '#3ecf8e',
+    purple: '#9d83ed',
+    amber:  '#f5a623',
+    red:    '#f06b6b',
+};
+
+function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgb(${r},${g},${b})`;
+}
+function gradStop(hex, a) { return hexToRgb(hex).replace('rgb','rgba').replace(')',`,${a})`); }
+function makeGrad(ctxEl, hex, a1=0.3, a2=0.01) {
+    const h = ctxEl.canvas.parentElement.offsetHeight || 180;
+    const g = ctxEl.createLinearGradient(0,0,0,h);
+    g.addColorStop(0, gradStop(hex,a1));
+    g.addColorStop(1, gradStop(hex,a2));
+    return g;
+}
+
+const baseOpts = (yLabel='') => ({
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            backgroundColor: 'rgba(11,11,18,0.92)',
+            borderColor: 'rgba(255,255,255,0.08)',
+            borderWidth: 1,
+            padding: 10,
+            titleFont: { size: 11, weight: '800', family: "'Nunito',sans-serif" },
+            bodyFont: { size: 11, family: "'DM Mono',monospace" },
+            titleColor: 'rgba(255,255,255,0.8)',
+            bodyColor: 'rgba(255,255,255,0.55)',
+        }
+    },
+    scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } },
+        y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { font: { size: 10 }, callback: v => v + (yLabel || '') },
+            border: { display: false }
+        }
+    }
+});
+
+/* ══════════════════════════════════
+   INIT CHARTS
+══════════════════════════════════ */
+function initCharts(period) {
+    const d = getData(period);
+    const lbl = getLabels(period);
+
+    Object.values(charts).forEach(c => c.destroy());
+    charts = {};
+
+    /* ── AGUA STACKED BAR ── */
+    const ctxA = document.getElementById('chart-agua').getContext('2d');
+    charts.agua = new Chart(ctxA, {
+        type: 'bar',
+        data: {
+            labels: lbl,
+            datasets: [
+                { label: 'Tomatito', data: d.agua.tomatito, backgroundColor: gradStop(C.blue, 0.8), borderRadius: 4, borderSkipped: false },
+                { label: 'Lechuga',  data: d.agua.lechuga,  backgroundColor: gradStop(C.green,0.8), borderRadius: 4, borderSkipped: false },
+                { label: 'Huerto Sur', data: d.agua.huerto, backgroundColor: gradStop(C.purple,0.8), borderRadius: 4, borderSkipped: false },
+            ]
+        },
+        options: {
+            ...baseOpts('L'), plugins: { ...baseOpts().plugins },
+            scales: {
+                x: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v+'L' }, border: { display:false } }
+            }
+        }
+    });
+
+    /* ── HUMEDAD SUELO LINE ── */
+    const ctxH = document.getElementById('chart-humedad').getContext('2d');
+    charts.humedad = new Chart(ctxH, {
+        type: 'line',
+        data: {
+            labels: lbl,
+            datasets: [
+                { label:'Tomatito', data: d.humSuelo.tomatito, borderColor:C.blue,   backgroundColor: makeGrad(ctxH,C.blue),   tension:.4, pointRadius:3, pointBackgroundColor:C.blue,   borderWidth:2, fill:true, hidden: !humedadVisible.tomatito },
+                { label:'Lechuga',  data: d.humSuelo.lechuga,  borderColor:C.green,  backgroundColor: makeGrad(ctxH,C.green),  tension:.4, pointRadius:3, pointBackgroundColor:C.green,  borderWidth:2, fill:true, hidden: !humedadVisible.lechuga  },
+                { label:'Huerto Sur',data:d.humSuelo.huerto,   borderColor:C.purple, backgroundColor: makeGrad(ctxH,C.purple), tension:.4, pointRadius:3, pointBackgroundColor:C.purple, borderWidth:2, fill:true, hidden: !humedadVisible.huerto   },
+            ]
+        },
+        options: { ...baseOpts('%'), scales: { x: baseOpts().scales.x, y: { ...baseOpts('%').scales.y, min: 0, max: 100 } } }
+    });
+
+    /* ── TEMPERATURA LINE ── */
+    const ctxT = document.getElementById('chart-temp').getContext('2d');
+    charts.temp = new Chart(ctxT, {
+        type: 'line',
+        data: {
+            labels: lbl,
+            datasets: [
+                { label:'Tomatito', data: d.temp.tomatito, borderColor:C.blue,   backgroundColor:'transparent', tension:.4, pointRadius:3, pointBackgroundColor:C.blue,   borderWidth:2 },
+                { label:'Huerto Sur', data: d.temp.huerto,  borderColor:C.purple, backgroundColor:'transparent', tension:.4, pointRadius:3, pointBackgroundColor:C.purple, borderWidth:2 },
+            ]
+        },
+        options: { ...baseOpts('°C') }
+    });
+
+    /* ── LUZ BAR ── */
+    const ctxL = document.getElementById('chart-luz').getContext('2d');
+    charts.luz = new Chart(ctxL, {
+        type: 'bar',
+        data: {
+            labels: lbl,
+            datasets: [
+                { label:'Tomatito',  data: d.luz.tomatito, backgroundColor: gradStop(C.amber,0.75),  borderRadius:3, borderSkipped:false },
+                { label:'Lechuga',   data: d.luz.lechuga,  backgroundColor: gradStop(C.green,0.75),  borderRadius:3, borderSkipped:false },
+                { label:'Huerto Sur',data: d.luz.huerto,   backgroundColor: gradStop(C.purple,0.75), borderRadius:3, borderSkipped:false },
+            ]
+        },
+        options: { ...baseOpts('klux') }
+    });
+
+    /* ── DONUT ── */
+    const ctxD = document.getElementById('chart-donut').getContext('2d');
+    const totA = d.agua.tomatito.reduce((s,v)=>s+v,0);
+    const totL = d.agua.lechuga.reduce((s,v)=>s+v,0);
+    const totH = d.agua.huerto.reduce((s,v)=>s+v,0);
+    const totT = totA+totL+totH;
+    charts.donut = new Chart(ctxD, {
+        type: 'doughnut',
+        data: {
+            labels: ['Tomatito','Lechuga','Huerto Sur'],
+            datasets: [{ data:[totA,totL,totH], backgroundColor:[gradStop(C.blue,0.85),gradStop(C.green,0.85),gradStop(C.purple,0.85)], borderColor:'rgba(11,11,18,0.8)', borderWidth:3, hoverOffset:6 }]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false, cutout:'68%',
+            plugins: {
+                legend:{display:false},
+                tooltip:{ ...baseOpts().plugins.tooltip, callbacks:{ label: ctx => ` ${Math.round(ctx.parsed/totT*100)}% · ${ctx.parsed.toFixed(1)}L` } }
+            }
+        }
+    });
+
+    /* ── HUMEDAD AMBIENTE ── */
+    const ctxHA = document.getElementById('chart-humamb').getContext('2d');
+    charts.humamb = new Chart(ctxHA, {
+        type: 'line',
+        data: {
+            labels: lbl,
+            datasets: [{ label:'Hum. ambiente', data: d.humAmb, borderColor:C.purple, backgroundColor: makeGrad(ctxHA,C.purple,0.25,0.01), tension:.4, pointRadius:3, pointBackgroundColor:C.purple, borderWidth:2, fill:true }]
+        },
+        options: { ...baseOpts('%'), scales: { x: baseOpts().scales.x, y: { ...baseOpts('%').scales.y, min:40, max:80 } } }
+    });
+
+    // update legend donut
+    const totR = totT;
+    document.querySelector('#chart-donut').closest('.chart-card').querySelector('.cc-legend').innerHTML = `
+        <div class="legend-item"><div class="legend-dot" style="background:${C.blue};"></div>Tomatito ${Math.round(totA/totR*100)}%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:${C.green};"></div>Lechuga ${Math.round(totL/totR*100)}%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:${C.purple};"></div>Huerto ${Math.round(totH/totR*100)}%</div>
+    `;
+}
+
+/* ── CLIMA WEEK ── */
+function renderClima() {
+    const dias = [
+        { n:'Lun', ic:'☁️', t:'22°', h:'60%', riego:true  },
+        { n:'Mar', ic:'⛅', t:'24°', h:'55%', riego:false },
+        { n:'Mié', ic:'🌤', t:'25°', h:'50%', riego:false },
+        { n:'Jue', ic:'☀️', t:'27°', h:'45%', riego:true  },
+        { n:'Vie', ic:'☀️', t:'28°', h:'42%', riego:true  },
+        { n:'Sáb', ic:'⛅', t:'26°', h:'48%', riego:false },
+        { n:'Dom', ic:'🌥', t:'23°', h:'58%', riego:false },
+    ];
+    const hoy = new Date().getDay();
+    const idx = hoy === 0 ? 6 : hoy - 1;
+    document.getElementById('climaWeek').innerHTML = dias.map((d,i) => `
+        <div class="clima-day ${i===idx?'today':''}">
+            <div class="cd-name">${d.n}</div>
+            <div class="cd-icon">${d.ic}</div>
+            <div class="cd-temp">${d.t}</div>
+            <div class="cd-hum">${d.h}</div>
+            <div class="cd-riego" style="background:${d.riego?'var(--blue)':'transparent'};border:1px solid ${d.riego?'var(--blue)':'var(--gb)'};"></div>
+        </div>
+    `).join('');
+}
+
+/* ── PERIOD SWITCH ── */
+function setPeriod(p) {
+    currentPeriod = p;
+    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    const labels = { dia:'Hoy · 3 jardines', semana:'Últimos 7 días · 3 jardines', mes:'Últimos 30 días · 3 jardines' };
+    document.getElementById('period-label').textContent = labels[p];
+
+    const kpiMap = {
+        dia:    { agua:'2.4L', aguaD:'↓ 12% vs ayer',             riegos:'3',  riegosD:'Mismo que ayer',           hum:'50%', humD:'↓ 5% desde esta mañana',   temp:'24°C', tempD:'Pico a las 2 pm' },
+        semana: { agua:'18.4L',aguaD:'↓ 8% vs semana anterior',   riegos:'21', riegosD:'7 por jardín promedio',   hum:'64%', humD:'↑ 5% respecto a semana ant',temp:'23°C', tempD:'Estable respecto al período' },
+        mes:    { agua:'72L',  aguaD:'↑ 3% vs mes anterior',      riegos:'84', riegosD:'28 por jardín promedio',  hum:'61%', humD:'Estable este mes',           temp:'23°C', tempD:'Mes cálido' },
+    };
+    const k = kpiMap[p];
+    document.getElementById('kpi-agua').innerHTML   = k.agua.replace(/([A-Z]+)/, '<span style="font-size:14px;opacity:.5">$1</span>').replace(/([°%])/, '<span style="font-size:14px;opacity:.5">$1</span>');
+    document.getElementById('kpi-agua-d').textContent  = k.aguaD;
+    document.getElementById('kpi-riegos').textContent  = k.riegos;
+    document.getElementById('kpi-riegos-d').textContent= k.riegosD;
+    document.getElementById('kpi-hum').innerHTML    = k.hum.replace('%','<span style="font-size:14px;opacity:.5">%</span>');
+    document.getElementById('kpi-hum-d').textContent   = k.humD;
+    document.getElementById('kpi-temp').innerHTML   = k.temp.replace('°C','<span style="font-size:14px;opacity:.5">°C</span>');
+    document.getElementById('kpi-temp-d').textContent  = k.tempD;
+
+    initCharts(p);
+}
+
+/* ── TOGGLE HUMEDAD ── */
+function toggleHumedad(jardin, btn) {
+    humedadVisible[jardin] = !humedadVisible[jardin];
+    btn.classList.toggle('active', humedadVisible[jardin]);
+    if (charts.humedad) {
+        const idx = {tomatito:0, lechuga:1, huerto:2}[jardin];
+        charts.humedad.data.datasets[idx].hidden = !humedadVisible[jardin];
+        charts.humedad.update();
+    }
+}
+
+/* ── INIT ── */
+renderClima();
+initCharts('semana');
+</script>
+</body>
+</html>

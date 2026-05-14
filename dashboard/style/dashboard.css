@@ -1,0 +1,210 @@
+/* ══════════════════════════════════════════
+   DRIPPIE — style/dashboard.css
+   Exclusivo de dashboard.html
+══════════════════════════════════════════ */
+
+/* ── NOTA: .card base vive en style.css global, no se redefine aquí ── */
+
+/* ── GRID PRINCIPAL ── */
+.content {
+    padding: 20px 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    flex: 1;
+}
+
+/* ── STAT PILLS ── */
+.stats-row {
+    grid-column: span 3;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+.stat-pill {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: var(--r); padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 4px;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    position: relative; overflow: hidden; transition: border-color .2s;
+}
+.stat-pill::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--r);
+    background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, transparent 55%);
+    pointer-events: none;
+}
+.stat-pill:hover { border-color: var(--gb-h); }
+.sp-label {
+    font-size: 10px; font-weight: 800; color: var(--t3);
+    letter-spacing: .1em; text-transform: uppercase;
+}
+.sp-value {
+    font-size: 26px; font-weight: 900;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -.5px; line-height: 1.1;
+}
+.sp-delta { font-size: 11px; font-weight: 700; color: var(--t3); margin-top: 2px; }
+.d-pos { color: var(--green); }
+.d-neg { color: var(--red); }
+.sp-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; border-radius: 0 0 var(--r) var(--r);
+}
+
+/* ── CLIMA ── */
+.weather-card { grid-column: span 2; }
+.w-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 18px;
+}
+.w-loc {
+    font-size: 11px; font-weight: 700; color: var(--t3);
+    letter-spacing: .04em; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 4px;
+}
+.w-loc svg { width: 11px; height: 11px; stroke: var(--t3); }
+.w-temp {
+    font-size: 54px; font-weight: 900;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -3px; line-height: 1; margin-bottom: 5px;
+}
+.w-desc { font-size: 12px; font-weight: 600; color: var(--t2); }
+.w-icon {
+    width: 68px; height: 68px; border-radius: 18px;
+    background: var(--bs); border: 1px solid rgba(91,173,234,0.15);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.w-icon svg { width: 32px; height: 32px; stroke: var(--blue); }
+
+.w-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1px; background: var(--gb);
+    border-radius: 12px; overflow: hidden;
+}
+.wg { background: rgba(11,11,18,0.55); padding: 11px 8px; text-align: center; }
+.wg svg { width: 16px; height: 16px; stroke: var(--t3); margin: 0 auto 4px; display: block; }
+.wg-val { font-size: 13px; font-weight: 800; font-family: 'DM Mono', monospace; }
+.wg-lbl {
+    font-size: 9px; font-weight: 800; color: var(--t4);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: 2px;
+}
+
+.riego-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 50px; margin-top: 14px;
+    font-size: 11px; font-weight: 700;
+}
+.riego-pill.ok  { background: var(--gs);  color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+.riego-pill.warn{ background: var(--ams); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.rdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.riego-pill.warn .rdot { animation: pulse 1.8s ease infinite; }
+
+/* ── ALERTAS ── */
+.alerts-card { grid-column: span 1; }
+.alert-row {
+    display: flex; gap: 10px; padding: 11px 0;
+    border-bottom: 1px solid var(--gb);
+}
+.alert-row:last-child { border-bottom: none; padding-bottom: 0; }
+.alert-mark {
+    width: 2px; border-radius: 1px; flex-shrink: 0;
+    align-self: stretch; margin-top: 3px;
+}
+.alert-body { flex: 1; }
+.a-title { font-size: 12px; font-weight: 800; margin-bottom: 3px; line-height: 1.35; }
+.a-desc { font-size: 11px; color: var(--t2); line-height: 1.5; font-weight: 600; }
+.a-time { font-size: 10px; color: var(--t3); margin-top: 4px; font-weight: 700; }
+
+/* ── JARDINES ── */
+.jardines-card { grid-column: span 2; }
+.jardines-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+}
+.jardin-tile {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    transition: all .2s;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.jardin-tile:hover { border-color: var(--ab); transform: translateY(-2px); }
+.jthumb {
+    width: 100%; aspect-ratio: 3/2;
+    background: linear-gradient(135deg, rgba(20,40,25,.9), rgba(8,20,12,.95));
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+}
+.jthumb img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.jthumb svg { width: 28px; height: 28px; stroke: rgba(62,207,142,0.35); }
+.jsbadge {
+    position: absolute; top: 7px; right: 7px;
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1.5px solid rgba(11,11,18,.8);
+}
+.jbody { padding: 10px 11px; }
+.j-name { font-size: 13px; font-weight: 800; margin-bottom: 1px; }
+.j-type { font-size: 10px; font-weight: 700; color: var(--t3); margin-bottom: 8px; }
+.j-metrics { display: flex; flex-direction: column; gap: 5px; }
+.jm { display: flex; align-items: center; gap: 5px; }
+.jm svg { width: 10px; height: 10px; flex-shrink: 0; }
+.jm-track { flex: 1; height: 2px; background: var(--gb); border-radius: 1px; overflow: hidden; }
+.jm-fill { height: 100%; border-radius: 1px; }
+.jm-val {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    font-weight: 500; color: var(--t2); min-width: 26px; text-align: right;
+}
+
+.add-tile {
+    background: transparent; border: 1px dashed rgba(255,255,255,.09);
+    border-radius: 14px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 7px; cursor: pointer; transition: all .2s;
+    padding: 16px; min-height: 120px;
+}
+.add-tile:hover { border-color: var(--ab); background: var(--as); }
+.add-tile svg { width: 20px; height: 20px; stroke: var(--t3); }
+.add-tile:hover svg { stroke: var(--accent); }
+.add-tile span { font-size: 11px; font-weight: 700; color: var(--t3); }
+.add-tile:hover span { color: var(--accent); }
+
+/* ── RECOMENDACIONES ── */
+.reco-card { grid-column: span 1; }
+.reco-row {
+    display: flex; gap: 10px; padding: 11px 0;
+    border-bottom: 1px solid var(--gb);
+}
+.reco-row:last-child { border-bottom: none; padding-bottom: 0; }
+.reco-icon {
+    width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reco-icon svg { width: 14px; height: 14px; }
+.r-title { font-size: 12px; font-weight: 800; margin-bottom: 3px; }
+.r-desc { font-size: 11px; color: var(--t2); line-height: 1.5; font-weight: 600; }
+
+/* ── ANIMACIONES ── */
+.card, .stat-pill { animation: fu .38s ease both; }
+.stats-row .stat-pill:nth-child(1) { animation-delay: .04s; }
+.stats-row .stat-pill:nth-child(2) { animation-delay: .08s; }
+.stats-row .stat-pill:nth-child(3) { animation-delay: .12s; }
+.stats-row .stat-pill:nth-child(4) { animation-delay: .16s; }
+.weather-card  { animation-delay: .20s; }
+.alerts-card   { animation-delay: .24s; }
+.jardines-card { animation-delay: .28s; }
+.reco-card     { animation-delay: .32s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1060px) {
+    .content { grid-template-columns: 1fr 1fr; }
+    .stats-row { grid-column: span 2; grid-template-columns: repeat(2,1fr); }
+    .weather-card, .alerts-card, .jardines-card, .reco-card { grid-column: span 2; }
+}
+@media (max-width: 680px) {
+    .content { padding: 14px 16px; padding-bottom: 88px; grid-template-columns: 1fr; gap: 12px; }
+    .stats-row { grid-column: span 1; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .weather-card, .alerts-card, .jardines-card, .reco-card { grid-column: span 1; }
+    .w-temp { font-size: 44px; }
+    .w-grid { grid-template-columns: repeat(2,1fr); }
+    
+    .jardines-grid { grid-template-columns: 1fr 1fr; }
+}
+

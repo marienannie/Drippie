@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title>Drippie – Alertas</title>
+<style>
+/* ── EXCLUSIVO ALERTAS ── */
+
+.content { padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ── HEADER ── */
+.alertas-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.alertas-header-left h2 { font-size: 22px; font-weight: 900; letter-spacing: -.4px; }
+.alertas-header-left p { font-size: 12px; color: var(--t3); font-weight: 600; margin-top: 2px; }
+
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.btn-marcar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 11px;
+    background: var(--glass); border: 1px solid var(--gb);
+    color: var(--t2); font-size: 12px; font-weight: 800;
+    cursor: pointer; transition: all .2s; font-family: 'Nunito', sans-serif;
+}
+.btn-marcar:hover { background: var(--glass-h); color: var(--t1); }
+.btn-marcar svg { width: 13px; height: 13px; stroke: currentColor; }
+
+/* ── RESUMEN PILLS ── */
+.resumen-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+.resumen-pill {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: 14px; padding: 14px 16px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden; transition: border-color .2s; cursor: pointer;
+}
+.resumen-pill::before { content:''; position:absolute; inset:0; border-radius:14px; background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.resumen-pill:hover { border-color: var(--gb-h); }
+.resumen-pill.active-filter { border-color: var(--ab); background: var(--as); }
+.rp-label { font-size: 10px; font-weight: 800; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+.rp-value { font-size: 24px; font-weight: 900; font-family: 'DM Mono', monospace; line-height: 1; }
+.rp-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; border-radius: 0 0 14px 14px; }
+
+/* ── FILTROS ── */
+.filtros-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.filtro-chip {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 50px;
+    background: var(--glass); border: 1px solid var(--gb);
+    font-size: 12px; font-weight: 800; color: var(--t2);
+    cursor: pointer; transition: all .2s; font-family: 'Nunito', sans-serif;
+    white-space: nowrap;
+}
+.filtro-chip:hover { background: var(--glass-h); color: var(--t1); }
+.filtro-chip.active { background: var(--as); border-color: var(--ab); color: var(--accent); }
+.filtro-chip.crit-chip.active { background: var(--rs); border-color: rgba(240,107,107,.3); color: var(--red); }
+.filtro-chip.warn-chip.active { background: var(--ams); border-color: rgba(245,166,35,.3); color: var(--amber); }
+.filtro-chip.ok-chip.active   { background: var(--gs); border-color: rgba(62,207,142,.3); color: var(--green); }
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.filtros-sep { flex: 1; }
+.search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: 50px; padding: 6px 14px;
+    transition: border-color .2s;
+}
+.search-wrap:focus-within { border-color: var(--ab); }
+.search-wrap svg { width: 13px; height: 13px; stroke: var(--t3); flex-shrink: 0; }
+.search-input {
+    background: none; border: none; outline: none;
+    color: var(--t1); font-size: 12px; font-weight: 600;
+    font-family: 'Nunito', sans-serif; width: 140px;
+}
+.search-input::placeholder { color: var(--t3); }
+
+/* ── LAYOUT ALERTAS + DETALLE ── */
+.alertas-layout {
+    display: grid; grid-template-columns: 1fr 340px; gap: 14px; align-items: start;
+}
+
+/* ── LISTA DE ALERTAS ── */
+.alertas-list { display: flex; flex-direction: column; gap: 6px; }
+
+.alerta-card {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+    cursor: pointer; transition: all .22s;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden;
+    animation: fadeUp .3s ease both;
+}
+.alerta-card::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.alerta-card:hover { border-color: var(--gb-h); background: var(--glass-h); }
+.alerta-card.active { border-color: var(--ab); background: var(--as); }
+.alerta-card.leida { opacity: .5; }
+.alerta-card.leida:hover { opacity: .8; }
+
+/* franja de color izquierda */
+.ac-stripe {
+    position: absolute; left: 0; top: 16%; bottom: 16%;
+    width: 2px; border-radius: 0 2px 2px 0;
+}
+
+.ac-icon {
+    width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+}
+.ac-icon svg { width: 17px; height: 17px; }
+
+.ac-body { flex: 1; min-width: 0; }
+.ac-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.ac-title { font-size: 13px; font-weight: 800; color: var(--t1); line-height: 1.3; }
+.ac-time { font-size: 10px; color: var(--t3); font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.ac-desc { font-size: 11px; color: var(--t2); line-height: 1.55; font-weight: 600; margin-bottom: 8px; }
+.ac-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ac-tag {
+    font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 50px;
+}
+.ac-jardín { font-size: 10px; color: var(--t3); font-weight: 700; }
+.ac-unread {
+    position: absolute; top: 14px; right: 14px;
+    width: 7px; height: 7px; border-radius: 50%;
+}
+
+/* acciones rápidas en hover */
+.ac-actions {
+    display: flex; gap: 6px; margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--gb);
+}
+.ac-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 8px;
+    background: var(--glass); border: 1px solid var(--gb);
+    font-size: 11px; font-weight: 800; color: var(--t2);
+    cursor: pointer; transition: all .18s; font-family: 'Nunito', sans-serif;
+}
+.ac-btn:hover { background: var(--glass-h); color: var(--t1); }
+.ac-btn.resolve { color: var(--green); border-color: rgba(62,207,142,.2); background: var(--gs); }
+.ac-btn.resolve:hover { background: rgba(62,207,142,.2); }
+.ac-btn svg { width: 11px; height: 11px; stroke: currentColor; }
+
+/* separador de fecha */
+.date-sep {
+    font-size: 10px; font-weight: 800; color: var(--t4);
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 4px 2px; display: flex; align-items: center; gap: 10px;
+}
+.date-sep::after { content:''; flex:1; height:1px; background:var(--gb); }
+
+/* ── PANEL LATERAL DETALLE ── */
+.alertas-side { display: flex; flex-direction: column; gap: 14px; }
+
+/* RESUMEN JARDÍN AFECTADO */
+.side-jardin-card {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: var(--r); padding: 18px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden;
+}
+.side-jardin-card::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.sj-label { font-size: 10px; font-weight: 800; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+.sj-name { font-size: 18px; font-weight: 900; letter-spacing: -.3px; margin-bottom: 2px; }
+.sj-sub { font-size: 11px; color: var(--t3); font-weight: 600; margin-bottom: 16px; }
+.sj-sensor-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--gb); }
+.sj-sensor-row:first-of-type { border-top: none; margin-top: 0; }
+.sj-sensor-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sj-sensor-icon svg { width: 13px; height: 13px; }
+.sj-sensor-label { font-size: 11px; color: var(--t2); font-weight: 700; flex: 1; }
+.sj-sensor-val { font-size: 12px; font-weight: 900; font-family: 'DM Mono', monospace; }
+.sj-mini-track { flex: 1; max-width: 60px; height: 2px; background: var(--gb); border-radius: 1px; overflow: hidden; }
+.sj-mini-fill { height: 100%; border-radius: 1px; }
+
+/* ACCIONES DEL LADO */
+.side-actions-card {
+    background: var(--glass); border: 1px solid var(--gb);
+    border-radius: var(--r); padding: 16px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.side-actions-card::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.sa-label { font-size: 10px; font-weight: 800; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+.sa-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--gb); background: var(--glass);
+    color: var(--t1); font-size: 12px; font-weight: 800;
+    cursor: pointer; transition: all .18s; width: 100%; text-align: left;
+    font-family: 'Nunito', sans-serif;
+}
+.sa-btn:hover { background: var(--glass-h); border-color: var(--gb-h); }
+.sa-btn.primary { background: var(--as); border-color: var(--ab); color: var(--accent); }
+.sa-btn.primary:hover { background: rgba(157,131,237,.2); }
+.sa-btn.danger { background: var(--rs); border-color: rgba(240,107,107,.2); color: var(--red); }
+.sa-btn svg { width: 14px; height: 14px; stroke: currentColor; flex-shrink: 0; }
+
+/* Historial timeline */
+.side-timeline { background: var(--glass); border: 1px solid var(--gb); border-radius: var(--r); padding: 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); position: relative; overflow: hidden; }
+.side-timeline::before { content:''; position:absolute; inset:0; border-radius:var(--r); background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 55%); pointer-events:none; }
+.tl-label { font-size: 10px; font-weight: 800; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+.tl-item { display: flex; gap: 10px; padding-bottom: 12px; position: relative; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before { content:''; position:absolute; left: 5px; top: 16px; bottom: 0; width: 1px; background: var(--gb); }
+.tl-item:last-child::before { display: none; }
+.tl-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--bg); flex-shrink: 0; margin-top: 3px; position: relative; z-index: 1; }
+.tl-body { flex: 1; }
+.tl-title { font-size: 12px; font-weight: 800; color: var(--t1); margin-bottom: 2px; }
+.tl-sub { font-size: 11px; color: var(--t2); font-weight: 600; }
+.tl-time { font-size: 10px; color: var(--t3); font-weight: 700; margin-top: 2px; }
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center; padding: 48px 24px;
+    color: var(--t3); display: none; flex-direction: column; align-items: center; gap: 12px;
+}
+.empty-state svg { width: 40px; height: 40px; stroke: var(--t4); }
+.empty-state p { font-size: 13px; font-weight: 700; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px) {
+    .alertas-layout { grid-template-columns: 1fr; }
+    .alertas-side { display: none; }
+}
+@media(max-width:680px) {
+    .content { padding: 14px 16px; padding-bottom: 88px; }
+    .resumen-row { grid-template-columns: 1fr 1fr; }
+    .filtros-sep { display: none; }
+    .search-wrap { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <div class="logo-mark">
+            <svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>
+        </div>
+        <span class="logo-name">Drippie</span>
+    </div>
+    <span class="nav-lbl">Principal</span>
+    <button class="nav-item" onclick="window.location.href='dashboard.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Inicio
+    </button>
+    <button class="nav-item" onclick="window.location.href='jardines.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+        Mis Jardines
+    </button>
+    <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Alertas <span class="nav-pip"></span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='estadisticas.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estadísticas
+    </button>
+    <span class="nav-lbl">Sistema</span>
+    <button class="nav-item" onclick="window.location.href='dispositivos.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
+        Dispositivos
+    </button>
+    <button class="nav-item" onclick="window.location.href='configuracion.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+    </button>
+    <div class="sidebar-foot">
+        <div class="user-row">
+            <div class="avatar">JD</div>
+            <div class="user-meta"><div class="u-name">Juan Pérez</div></div>
+            <span style="font-size:13px;color:var(--t3);">···</span>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <div class="tb-left">
+            <div class="tb-eyebrow" id="topDate"></div>
+            <div class="tb-title" id="topGreet"></div>
+        </div>
+        <div class="tb-right">
+            <div class="icon-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <div class="n-pip"></div>
+            </div>
+            <div class="icon-btn" style="background:var(--as);border-color:var(--ab);font-size:11px;font-weight:800;color:var(--accent);">JD</div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- HEADER -->
+        <div class="alertas-header">
+            <div class="alertas-header-left">
+                <h2>Alertas</h2>
+                <p id="alertas-sub">2 sin resolver · última actualización hace 2 min</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-marcar" onclick="marcarTodasLeidas()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Marcar todas como leídas
+                </button>
+            </div>
+        </div>
+
+        <!-- RESUMEN PILLS -->
+        <div class="resumen-row">
+            <div class="resumen-pill active-filter" id="pill-todas" onclick="filtrar('todas')">
+                <div class="rp-label">Total</div>
+                <div class="rp-value" style="color:var(--t1)" id="cnt-todas">5</div>
+                <div class="rp-bar" style="background:var(--accent);opacity:.3;"></div>
+            </div>
+            <div class="resumen-pill" id="pill-crit" onclick="filtrar('crit')">
+                <div class="rp-label">Críticas</div>
+                <div class="rp-value" style="color:var(--red)" id="cnt-crit">1</div>
+                <div class="rp-bar" style="background:var(--red);opacity:.3;"></div>
+            </div>
+            <div class="resumen-pill" id="pill-warn" onclick="filtrar('warn')">
+                <div class="rp-label">Atención</div>
+                <div class="rp-value" style="color:var(--amber)" id="cnt-warn">1</div>
+                <div class="rp-bar" style="background:var(--amber);opacity:.3;"></div>
+            </div>
+            <div class="resumen-pill" id="pill-ok" onclick="filtrar('ok')">
+                <div class="rp-label">Informativas</div>
+                <div class="rp-value" style="color:var(--green)" id="cnt-ok">3</div>
+                <div class="rp-bar" style="background:var(--green);opacity:.3;"></div>
+            </div>
+        </div>
+
+        <!-- FILTROS + BÚSQUEDA -->
+        <div class="filtros-row">
+            <button class="filtro-chip active" id="chip-todas" onclick="filtrarChip('todas')">Todas</button>
+            <button class="filtro-chip crit-chip" id="chip-crit" onclick="filtrarChip('crit')"><span class="chip-dot" style="color:var(--red)"></span>Críticas</button>
+            <button class="filtro-chip warn-chip" id="chip-warn" onclick="filtrarChip('warn')"><span class="chip-dot" style="color:var(--amber)"></span>Atención</button>
+            <button class="filtro-chip ok-chip" id="chip-ok" onclick="filtrarChip('ok')"><span class="chip-dot" style="color:var(--green)"></span>Informativas</button>
+            <button class="filtro-chip" id="chip-noleidas" onclick="filtrarChip('noleidas')">Sin leer</button>
+            <div class="filtros-sep"></div>
+            <div class="search-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="search-input" placeholder="Buscar alerta…" id="searchInput" oninput="buscar(this.value)">
+            </div>
+        </div>
+
+        <!-- LAYOUT LISTA + SIDE -->
+        <div class="alertas-layout">
+
+            <!-- LISTA -->
+            <div>
+                <div class="alertas-list" id="alertasList"></div>
+                <div class="empty-state" id="emptyState">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <p>No hay alertas que mostrar</p>
+                </div>
+            </div>
+
+            <!-- SIDEBAR DETALLE -->
+            <div class="alertas-side" id="alertasSide">
+                <div class="side-jardin-card" id="sideJardinCard"></div>
+                <div class="side-actions-card" id="sideActionsCard"></div>
+                <div class="side-timeline" id="sideTimeline"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="bnav">
+        <button class="bi" onclick="window.location.href='dashboard.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio
+        </button>
+        <button class="bi" onclick="window.location.href='jardines.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            Jardines
+        </button>
+        <button class="bi active" style="position:relative;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="b-pip"></span>
+            Alertas
+        </button>
+        <button class="bi">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Perfil
+        </button>
+    </div>
+</nav>
+
+<script src="script.js"></script>
+<script>
+/* ══════════════════════════════════
+   DATOS
+══════════════════════════════════ */
+const alertas = [
+    {
+        id: 0, tipo: 'crit', leida: false,
+        titulo: 'Lechuga — sin fuente de agua',
+        desc: 'El módulo no detecta flujo de agua. Puede haberse agotado el suministro o haber una obstrucción en la línea.',
+        jardin: 'Lechuga', jardinSub: 'Lechuga romana · Huerto exterior',
+        tiempo: 'Hace 8 min', fecha: 'hoy',
+        categoria: 'Suministro',
+        sensores: [
+            { icon: 'agua', label: 'Humedad suelo', val: '12%', color: 'var(--red)', pct: 12 },
+            { icon: 'temp', label: 'Temperatura', val: '19°C', color: 'var(--blue)', pct: 25 },
+            { icon: 'bat', label: 'Batería sensor', val: '82%', color: 'var(--green)', pct: 82 },
+        ],
+        acciones: [
+            { label: 'Regar manualmente ahora', icon: 'riego', primary: true },
+            { label: 'Ver jardín en detalle', icon: 'ver', primary: false },
+            { label: 'Silenciar 1 hora', icon: 'silenciar', primary: false },
+        ],
+        timeline: [
+            { title: 'Alerta generada', sub: 'Sin detección de flujo de agua', time: 'Hace 8 min', color: 'var(--red)' },
+            { title: 'Último riego exitoso', sub: '1.2 L aplicados correctamente', time: 'Ayer, 7:00 am', color: 'var(--green)' },
+            { title: 'Sensor conectado', sub: 'Módulo IoT vinculado al jardín', time: 'Hace 12 días', color: 'var(--accent)' },
+        ]
+    },
+    {
+        id: 1, tipo: 'warn', leida: false,
+        titulo: 'Tomatito — batería del sensor baja',
+        desc: 'El sensor solar está al 14% de carga. No está recibiendo suficiente luz directa. Se recomienda reubicar el módulo.',
+        jardin: 'Tomatito', jardinSub: 'Tomate Cherry · Maceta interior',
+        tiempo: 'Hace 23 min', fecha: 'hoy',
+        categoria: 'Sensor',
+        sensores: [
+            { icon: 'bat', label: 'Batería sensor', val: '14%', color: 'var(--amber)', pct: 14 },
+            { icon: 'luz', label: 'Luz recibida', val: '14 klux', color: 'var(--amber)', pct: 14 },
+            { icon: 'agua', label: 'Humedad suelo', val: '78%', color: 'var(--blue)', pct: 78 },
+        ],
+        acciones: [
+            { label: 'Ver recomendación de ubicación', icon: 'ver', primary: true },
+            { label: 'Silenciar esta alerta', icon: 'silenciar', primary: false },
+            { label: 'Marcar como revisada', icon: 'check', primary: false },
+        ],
+        timeline: [
+            { title: 'Alerta de batería', sub: 'Nivel bajó al 14%', time: 'Hace 23 min', color: 'var(--amber)' },
+            { title: 'Aviso previo', sub: 'Batería al 30% — primer aviso', time: 'Hace 2 días', color: 'var(--amber)' },
+            { title: 'Carga completa', sub: 'Batería al 100% tras reubicación', time: 'Hace 5 días', color: 'var(--green)' },
+        ]
+    },
+    {
+        id: 2, tipo: 'ok', leida: false,
+        titulo: 'Huerto Sur — riego completado',
+        desc: '0.8 L aplicados en el ciclo programado de las 7:00 am. Todos los parámetros dentro del rango normal.',
+        jardin: 'Huerto Sur', jardinSub: 'Chile jalapeño · Exterior',
+        tiempo: 'Hoy, 7:00 am', fecha: 'hoy',
+        categoria: 'Riego',
+        sensores: [
+            { icon: 'agua', label: 'Humedad suelo', val: '61%', color: 'var(--blue)', pct: 61 },
+            { icon: 'temp', label: 'Temperatura', val: '25°C', color: 'var(--amber)', pct: 58 },
+            { icon: 'bat', label: 'Batería sensor', val: '98%', color: 'var(--green)', pct: 98 },
+        ],
+        acciones: [
+            { label: 'Ver historial de riego', icon: 'ver', primary: true },
+            { label: 'Ajustar horario', icon: 'config', primary: false },
+        ],
+        timeline: [
+            { title: 'Riego completado', sub: '0.8 L aplicados sin incidencias', time: 'Hoy, 7:00 am', color: 'var(--green)' },
+            { title: 'Ciclo iniciado', sub: 'Riego automático programado', time: 'Hoy, 6:58 am', color: 'var(--accent)' },
+            { title: 'Riego previo', sub: '0.8 L — sin incidencias', time: 'Ayer, 7:00 am', color: 'var(--green)' },
+        ]
+    },
+    {
+        id: 3, tipo: 'ok', leida: true,
+        titulo: 'Tomatito — riego completado',
+        desc: '0.6 L aplicados ayer a las 8:00 pm. El ciclo se ejecutó dentro de los parámetros establecidos.',
+        jardin: 'Tomatito', jardinSub: 'Tomate Cherry · Maceta interior',
+        tiempo: 'Ayer, 8:00 pm', fecha: 'ayer',
+        categoria: 'Riego',
+        sensores: [
+            { icon: 'agua', label: 'Humedad suelo', val: '74%', color: 'var(--blue)', pct: 74 },
+            { icon: 'temp', label: 'Temperatura', val: '21°C', color: 'var(--amber)', pct: 40 },
+            { icon: 'bat', label: 'Batería sensor', val: '22%', color: 'var(--amber)', pct: 22 },
+        ],
+        acciones: [
+            { label: 'Ver historial de riego', icon: 'ver', primary: true },
+        ],
+        timeline: [
+            { title: 'Riego completado', sub: '0.6 L aplicados', time: 'Ayer, 8:00 pm', color: 'var(--green)' },
+            { title: 'Ciclo iniciado', sub: 'Riego automático', time: 'Ayer, 7:58 pm', color: 'var(--accent)' },
+        ]
+    },
+    {
+        id: 4, tipo: 'ok', leida: true,
+        titulo: 'Sistema — sincronización en la nube',
+        desc: 'Todos los datos de sensores se sincronizaron correctamente con el servidor. Sin errores de transmisión.',
+        jardin: 'Sistema', jardinSub: 'Sincronización global',
+        tiempo: 'Ayer, 12:00 am', fecha: 'ayer',
+        categoria: 'Sistema',
+        sensores: [],
+        acciones: [
+            { label: 'Ver registros del sistema', icon: 'ver', primary: false },
+        ],
+        timeline: [
+            { title: 'Sincronización exitosa', sub: '3 jardines · 5 sensores', time: 'Ayer, 12:00 am', color: 'var(--green)' },
+            { title: 'Sincronización previa', sub: 'Sin errores', time: 'Hace 2 días', color: 'var(--green)' },
+        ]
+    }
+];
+
+/* CONFIG VISUAL */
+const tipoCfg = {
+    crit: { color: 'var(--red)',   bg: 'var(--rs)',  label: 'Crítica',     iconColor: 'var(--red)' },
+    warn: { color: 'var(--amber)', bg: 'var(--ams)', label: 'Atención',    iconColor: 'var(--amber)' },
+    ok:   { color: 'var(--green)', bg: 'var(--gs)',  label: 'Informativa', iconColor: 'var(--green)' },
+};
+
+const sensorIconSVG = {
+    agua: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 12H2M22 12h-3"/></svg>`,
+    temp: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>`,
+    bat:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></svg>`,
+    luz:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>`,
+};
+
+const accionIconSVG = {
+    riego:    `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 12H2M22 12h-3"/></svg>`,
+    ver:      `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    silenciar:`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
+    check:    `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    config:   `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
+};
+
+/* ══════════════════════════════════
+   ESTADO
+══════════════════════════════════ */
+let filtroActivo = 'todas';
+let busquedaActiva = '';
+let activaId = 0;
+
+/* ══════════════════════════════════
+   RENDER LISTA
+══════════════════════════════════ */
+function alertasFiltradas() {
+    return alertas.filter(a => {
+        const matchFiltro = filtroActivo === 'todas' ? true
+            : filtroActivo === 'noleidas' ? !a.leida
+            : a.tipo === filtroActivo;
+        const matchBusqueda = busquedaActiva === '' ? true
+            : a.titulo.toLowerCase().includes(busquedaActiva.toLowerCase())
+            || a.jardin.toLowerCase().includes(busquedaActiva.toLowerCase());
+        return matchFiltro && matchBusqueda;
+    });
+}
+
+function renderLista() {
+    const lista = document.getElementById('alertasList');
+    const empty = document.getElementById('emptyState');
+    const filtradas = alertasFiltradas();
+
+    if (filtradas.length === 0) {
+        lista.innerHTML = '';
+        empty.style.display = 'flex';
+        return;
+    }
+    empty.style.display = 'none';
+
+    // Agrupar por fecha
+    const grupos = {};
+    filtradas.forEach(a => {
+        if (!grupos[a.fecha]) grupos[a.fecha] = [];
+        grupos[a.fecha].push(a);
+    });
+
+    const fechaLabel = { hoy: 'Hoy', ayer: 'Ayer' };
+    let html = '';
+    Object.entries(grupos).forEach(([fecha, items]) => {
+        html += `<div class="date-sep">${fechaLabel[fecha] || fecha}</div>`;
+        items.forEach((a, i) => {
+            const cfg = tipoCfg[a.tipo];
+            html += `
+            <div class="alerta-card ${a.leida ? 'leida' : ''} ${a.id === activaId ? 'active' : ''}"
+                 onclick="selectAlerta(${a.id})"
+                 style="animation-delay:${i * 0.05}s">
+                <div class="ac-stripe" style="background:${cfg.color};"></div>
+                <div class="ac-icon" style="background:${cfg.bg};border:1px solid ${cfg.color}22;">
+                    ${a.tipo === 'crit'
+                        ? `<svg viewBox="0 0 24 24" fill="none" stroke="${cfg.iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+                        : a.tipo === 'warn'
+                        ? `<svg viewBox="0 0 24 24" fill="none" stroke="${cfg.iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+                        : `<svg viewBox="0 0 24 24" fill="none" stroke="${cfg.iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+                    }
+                </div>
+                <div class="ac-body">
+                    <div class="ac-top">
+                        <div class="ac-title">${a.titulo}</div>
+                        <div class="ac-time">${a.tiempo}</div>
+                    </div>
+                    <div class="ac-desc">${a.desc}</div>
+                    <div class="ac-footer">
+                        <span class="ac-tag" style="background:${cfg.bg};color:${cfg.color};">${cfg.label}</span>
+                        <span class="ac-jardín">${a.jardin} · ${a.categoria}</span>
+                    </div>
+                    ${a.tipo !== 'ok' ? `
+                    <div class="ac-actions">
+                        <button class="ac-btn resolve" onclick="event.stopPropagation();resolverAlerta(${a.id})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Resolver
+                        </button>
+                        <button class="ac-btn" onclick="event.stopPropagation();marcarLeida(${a.id})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            Marcar leída
+                        </button>
+                    </div>` : ''}
+                </div>
+                ${!a.leida ? `<div class="ac-unread" style="background:${cfg.color};"></div>` : ''}
+            </div>`;
+        });
+    });
+    lista.innerHTML = html;
+}
+
+/* ══════════════════════════════════
+   RENDER SIDE PANEL
+══════════════════════════════════ */
+function renderSide(id) {
+    const a = alertas.find(x => x.id === id);
+    if (!a) return;
+    const cfg = tipoCfg[a.tipo];
+
+    // Jardin card
+    document.getElementById('sideJardinCard').innerHTML = `
+        <div class="sj-label">Jardín afectado</div>
+        <div class="sj-name">${a.jardin}</div>
+        <div class="sj-sub">${a.jardinSub}</div>
+        ${a.sensores.map(s => `
+        <div class="sj-sensor-row">
+            <div class="sj-sensor-icon" style="background:${s.color}22;border:1px solid ${s.color}22;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    ${sensorIconSVG[s.icon].replace(/<svg[^>]*>/, '').replace('</svg>', '')}
+                </svg>
+            </div>
+            <span class="sj-sensor-label">${s.label}</span>
+            <div class="sj-mini-track"><div class="sj-mini-fill" style="width:${s.pct}%;background:${s.color};"></div></div>
+            <span class="sj-sensor-val" style="color:${s.color}">${s.val}</span>
+        </div>`).join('')}
+    `;
+
+    // Acciones
+    document.getElementById('sideActionsCard').innerHTML = `
+        <div class="sa-label">Acciones</div>
+        ${a.acciones.map(ac => `
+        <button class="sa-btn ${ac.primary ? 'primary' : ''}">
+            ${accionIconSVG[ac.icon] || ''}
+            ${ac.label}
+        </button>`).join('')}
+        ${a.tipo !== 'ok' ? `<button class="sa-btn danger" onclick="resolverAlerta(${a.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Marcar como resuelta
+        </button>` : ''}
+    `;
+
+    // Timeline
+    document.getElementById('sideTimeline').innerHTML = `
+        <div class="tl-label">Historial de la alerta</div>
+        ${a.timeline.map(t => `
+        <div class="tl-item">
+            <div class="tl-dot" style="background:${t.color};"></div>
+            <div class="tl-body">
+                <div class="tl-title">${t.title}</div>
+                <div class="tl-sub">${t.sub}</div>
+                <div class="tl-time">${t.time}</div>
+            </div>
+        </div>`).join('')}
+    `;
+}
+
+/* ══════════════════════════════════
+   ACCIONES
+══════════════════════════════════ */
+function selectAlerta(id) {
+    activaId = id;
+    marcarLeida(id);
+    renderLista();
+    renderSide(id);
+}
+
+function marcarLeida(id) {
+    const a = alertas.find(x => x.id === id);
+    if (a) a.leida = true;
+    actualizarContadores();
+}
+
+function resolverAlerta(id) {
+    const a = alertas.find(x => x.id === id);
+    if (!a) return;
+    a.leida = true;
+    a.tipo = 'ok';
+    a.titulo = a.titulo.replace('— batería baja', '— resuelta').replace('— sin fuente de agua', '— resuelta');
+    actualizarContadores();
+    renderLista();
+    renderSide(id);
+}
+
+function marcarTodasLeidas() {
+    alertas.forEach(a => a.leida = true);
+    actualizarContadores();
+    renderLista();
+}
+
+function filtrar(tipo) {
+    filtroActivo = tipo;
+    document.querySelectorAll('.resumen-pill').forEach(p => p.classList.remove('active-filter'));
+    document.getElementById('pill-' + tipo).classList.add('active-filter');
+    // sync chip
+    filtrarChip(tipo === 'todas' ? 'todas' : tipo, true);
+    renderLista();
+}
+
+function filtrarChip(tipo, skipPill) {
+    filtroActivo = tipo;
+    document.querySelectorAll('.filtro-chip').forEach(c => c.classList.remove('active'));
+    const chipEl = document.getElementById('chip-' + tipo);
+    if (chipEl) chipEl.classList.add('active');
+    if (!skipPill) {
+        document.querySelectorAll('.resumen-pill').forEach(p => p.classList.remove('active-filter'));
+        const pillTipo = ['crit','warn','ok'].includes(tipo) ? tipo : 'todas';
+        document.getElementById('pill-' + pillTipo).classList.add('active-filter');
+    }
+    renderLista();
+}
+
+function buscar(val) {
+    busquedaActiva = val;
+    renderLista();
+}
+
+function actualizarContadores() {
+    const sinLeer = alertas.filter(a => !a.leida && (a.tipo === 'crit' || a.tipo === 'warn')).length;
+    document.getElementById('alertas-sub').textContent =
+        `${sinLeer} sin resolver · última actualización hace 2 min`;
+    document.getElementById('cnt-todas').textContent = alertas.length;
+    document.getElementById('cnt-crit').textContent = alertas.filter(a => a.tipo === 'crit').length;
+    document.getElementById('cnt-warn').textContent = alertas.filter(a => a.tipo === 'warn').length;
+    document.getElementById('cnt-ok').textContent   = alertas.filter(a => a.tipo === 'ok').length;
+    // nav-pip
+    const pipVisible = alertas.some(a => !a.leida && (a.tipo === 'crit' || a.tipo === 'warn'));
+    document.querySelectorAll('.nav-pip, .b-pip').forEach(p => p.style.display = pipVisible ? '' : 'none');
+}
+renderLista();
+renderSide(0);
+actualizarContadores();
+</script>
+</body>
+</html>
